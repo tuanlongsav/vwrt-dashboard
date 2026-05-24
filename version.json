@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.9",
+        "version": "1.0.10",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "Fix AGH endpoint 'Lỗi kết nối' + cải thiện debugging.\n- update_run dùng `find -exec chmod +x` recursive thay vì glob 2 cấp — file mới trong cgi-bin/adguard/ giờ tự chmod đúng sau OTA.\n- util_cards.js: thay 'Lỗi kết nối endpoint' bằng message cụ thể (HTTP 404 / HTTP 500 / Endpoint trả non-JSON: ...) — dễ chẩn đoán hơn.\n- Console.error stack trace cho debugging mà không cần SSH."
+        "log": "Fix lỗi 502 Bad Gateway của endpoint /cgi-bin/adguard/info.\n- Bug: tonumber(exec(cmd):gsub(...)) — gsub trả về 2 giá trị (string + count), tonumber coi count là 'base' rồi crash với 'bad argument #2 to tonumber (base out of range)'.\n- Sửa: bọc gsub trong cặp () để giới hạn về 1 giá trị: tonumber((s:gsub(...))).\n- Áp dụng cho cả /cgi-bin/adguard/info (2 chỗ) và /cgi-bin/adguard/setauth (1 chỗ).\n- Sau update, card AGH sẽ load đúng — hiển thị 'CẦN AUTH' (form nhập user/pass) hoặc stats trực tiếp nếu AGH cho phép no-auth."
     }
 }

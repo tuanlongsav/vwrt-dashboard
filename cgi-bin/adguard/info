@@ -117,7 +117,11 @@ local function fetch_json(path)
         "curl -s --max-time 3 -o /tmp/agh_resp.json -w '%%{http_code}' %s%s",
         base, path
     )
-    local code = tonumber(exec(cmd):gsub("%s", "")) or 0
+    -- IMPORTANT: gsub returns (string, count). Without an extra pair of
+    -- parens, tonumber() receives BOTH and interprets the count as a base,
+    -- which can be out-of-range and crashes the script with
+    -- "bad argument #2 to 'tonumber' (base out of range)".
+    local code = tonumber((exec(cmd):gsub("%s", ""))) or 0
     local body = read_file("/tmp/agh_resp.json") or ""
 
     -- If 401/403 and we have saved creds, retry with Basic Auth
@@ -127,7 +131,7 @@ local function fetch_json(path)
             "curl -s --max-time 3 --user '%s:%s' -o /tmp/agh_resp.json -w '%%{http_code}' %s%s",
             shq(agh_user), shq(agh_pass), base, path
         )
-        code = tonumber(exec(cmd):gsub("%s", "")) or 0
+        code = tonumber((exec(cmd):gsub("%s", ""))) or 0
         body = read_file("/tmp/agh_resp.json") or ""
     end
 

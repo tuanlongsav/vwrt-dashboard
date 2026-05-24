@@ -101,7 +101,8 @@ local cmd = string.format(
     "curl -s --max-time 3 --user '%s:%s' -o /tmp/agh_auth_test.json -w '%%{http_code}' %s/control/status",
     shq(user), shq(pass), base
 )
-local code = tonumber(exec(cmd):gsub("%s", "")) or 0
+-- Wrap gsub in extra parens — see fix in info endpoint for rationale.
+local code = tonumber((exec(cmd):gsub("%s", ""))) or 0
 os.remove("/tmp/agh_auth_test.json")
 
 if code == 401 or code == 403 then
