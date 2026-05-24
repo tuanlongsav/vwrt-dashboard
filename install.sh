@@ -152,9 +152,66 @@ check_prereqs() {
     command -v uhttpd >/dev/null 2>&1 || need_pkgs="$need_pkgs uhttpd"
     command -v wget   >/dev/null 2>&1 || need_pkgs="$need_pkgs wget-ssl"
 
-    # Wrapper: try opkg install, auto-recover from signature-trust failures
-    # which are common on custom firmwares (Fudy / GL.iNet / ImmortalWrt forks
-    # that haven't shipped the OpenWrt usign public key).
+    # Download package .ipk directly from upstream OpenWrt repo via HTTPS,
+    # then opkg install LOCAL file (no feed signature check on local install).
+    # Args: $1 = package name (e.g. "lua-cjson")
+    #       $2 = feed name  (e.g. "packages" / "luci" / "base" / "routing")
+    # Returns 0 on success.
+    fetch_and_install_ipk() {
+        pkg="$1"
+        feed="$2"
+
+        # Architecture (e.g. aarch64_cortex-a53) — third line from opkg
+        arch=$(opkg print-architecture 2>/dev/null | awk '$1=="arch" && $2!~/^(all|noarch)$/ {print $2; exit}')
+        [ -z "$arch" ] && { warn "Could not detect arch."; return 1; }
+
+        release=$(grep -E '^DISTRIB_RELEASE=' /etc/openwrt_release 2>/dev/null | cut -d"'" -f2)
+        [ -z "$release" ] && { warn "Could not detect release."; return 1; }
+
+        base_url="https://downloads.openwrt.org/releases/${release}/packages/${arch}/${feed}"
+
+        info "  Resolving $pkg in $base_url ..."
+        # Parse Packages file for the .ipk filename for this exact package name
+        filename=$(wget --no-check-certificate -q -O- "${base_url}/Packages" 2>/dev/null | \
+                   awk -v p="$pkg" '
+                       /^Package: / { found=($2==p) ? 1 : 0; next }
+                       found && /^Filename: / { print $2; exit }
+                   ')
+
+        if [ -z "$filename" ]; then
+            warn "  Package $pkg not found in feed $feed."
+            return 1
+        fi
+
+        info "  Downloading $filename ..."
+        if ! wget --no-check-certificate -q -O "/tmp/$filename" "${base_url}/$filename"; then
+            warn "  Download failed: ${base_url}/$filename"
+            return 1
+        fi
+
+        info "  Installing local /tmp/$filename ..."
+        if opkg install "/tmp/$filename" >>"$LOG" 2>&1; then
+            rm -f "/tmp/$filename"
+            return 0
+        fi
+        return 1
+    }
+
+    # Map our package names → feed names (where to look on downloads.openwrt.org)
+    feed_for_pkg() {
+        case "$1" in
+            lua|lua-cjson|wget*) echo "packages" ;;
+            luci-lib-jsonc|luci-base) echo "luci" ;;
+            uhttpd*) echo "base" ;;
+            *) echo "packages" ;;
+        esac
+    }
+
+    # Wrapper: try opkg install with three escalating strategies.
+    # 1) Normal opkg install (works on stock OpenWrt with valid signing keys)
+    # 2) DELETE 'option check_signature' from opkg.conf (the correct way to
+    #    disable — opkg treats ANY value, including '0', as truthy). Retry.
+    # 3) For each still-missing pkg, download .ipk via HTTPS and install local.
     opkg_install_with_sig_recovery() {
         # $1 = space-separated package list
 
@@ -164,29 +221,45 @@ check_prereqs() {
             return 0
         fi
 
-        # Look for the signature-failure pattern in our log
+        # Detect signature-trust failure pattern
         if grep -qE 'Signature check failed|Unknown package' "$LOG"; then
-            warn "Detected signature-trust failure (common on custom firmware)."
-            warn "Disabling opkg signature check temporarily and retrying..."
+            warn "Detected opkg signature-trust failure."
 
-            # Backup once
-            [ -f /etc/opkg.conf.vwrtbak ] || cp /etc/opkg.conf /etc/opkg.conf.vwrtbak
+            # Strategy 2: properly disable signature check by REMOVING the
+            # option line entirely. opkg's 'check_signature' is presence-
+            # based — setting it to "0" still keeps it enabled. Only
+            # absence of the option disables it.
+            if [ -f /etc/opkg.conf ] && grep -q '^option check_signature' /etc/opkg.conf; then
+                [ -f /etc/opkg.conf.vwrtbak ] || cp /etc/opkg.conf /etc/opkg.conf.vwrtbak
+                sed -i '/^option check_signature/d' /etc/opkg.conf
+                warn "Removed 'option check_signature' from /etc/opkg.conf"
+                warn "(backed up to /etc/opkg.conf.vwrtbak)"
 
-            # Either flip existing 'option check_signature' line or append off-switch
-            if grep -q '^option check_signature' /etc/opkg.conf; then
-                sed -i 's/^option check_signature.*/option check_signature 0/' /etc/opkg.conf
-            else
-                echo 'option check_signature 0' >> /etc/opkg.conf
+                opkg update >>"$LOG" 2>&1
+                # shellcheck disable=SC2086
+                if opkg install $1 >>"$LOG" 2>&1; then
+                    ok "Installed after removing signature option."
+                    return 0
+                fi
             fi
 
-            opkg update >>"$LOG" 2>&1
-            # shellcheck disable=SC2086
-            if opkg install $1 >>"$LOG" 2>&1; then
-                ok "Installed after disabling signature check."
-                warn "Kept 'option check_signature 0' in /etc/opkg.conf."
-                warn "Original config backed up to /etc/opkg.conf.vwrtbak."
+            # Strategy 3: direct .ipk download per package
+            warn "Falling back to direct .ipk download via HTTPS..."
+            failed=""
+            for pkg in $1; do
+                feed=$(feed_for_pkg "$pkg")
+                if fetch_and_install_ipk "$pkg" "$feed"; then
+                    ok "  $pkg installed via direct download."
+                else
+                    failed="$failed $pkg"
+                fi
+            done
+
+            if [ -z "$failed" ]; then
+                ok "All packages installed via direct .ipk download."
                 return 0
             fi
+            warn "Direct download still missed:$failed"
         fi
         return 1
     }
