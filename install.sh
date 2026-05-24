@@ -152,17 +152,52 @@ check_prereqs() {
     command -v uhttpd >/dev/null 2>&1 || need_pkgs="$need_pkgs uhttpd"
     command -v wget   >/dev/null 2>&1 || need_pkgs="$need_pkgs wget-ssl"
 
+    # Wrapper: try opkg install, auto-recover from signature-trust failures
+    # which are common on custom firmwares (Fudy / GL.iNet / ImmortalWrt forks
+    # that haven't shipped the OpenWrt usign public key).
+    opkg_install_with_sig_recovery() {
+        # $1 = space-separated package list
+
+        opkg update >>"$LOG" 2>&1 || warn "opkg update had issues (continuing)."
+        # shellcheck disable=SC2086
+        if opkg install $1 >>"$LOG" 2>&1; then
+            return 0
+        fi
+
+        # Look for the signature-failure pattern in our log
+        if grep -qE 'Signature check failed|Unknown package' "$LOG"; then
+            warn "Detected signature-trust failure (common on custom firmware)."
+            warn "Disabling opkg signature check temporarily and retrying..."
+
+            # Backup once
+            [ -f /etc/opkg.conf.vwrtbak ] || cp /etc/opkg.conf /etc/opkg.conf.vwrtbak
+
+            # Either flip existing 'option check_signature' line or append off-switch
+            if grep -q '^option check_signature' /etc/opkg.conf; then
+                sed -i 's/^option check_signature.*/option check_signature 0/' /etc/opkg.conf
+            else
+                echo 'option check_signature 0' >> /etc/opkg.conf
+            fi
+
+            opkg update >>"$LOG" 2>&1
+            # shellcheck disable=SC2086
+            if opkg install $1 >>"$LOG" 2>&1; then
+                ok "Installed after disabling signature check."
+                warn "Kept 'option check_signature 0' in /etc/opkg.conf."
+                warn "Original config backed up to /etc/opkg.conf.vwrtbak."
+                return 0
+            fi
+        fi
+        return 1
+    }
+
     if [ -n "$need_pkgs" ] && [ "${SKIP_DEPS:-0}" != "1" ]; then
         info "Installing missing packages:$need_pkgs"
 
-        # Try opkg — log full output so user can diagnose
-        if ! opkg update >>"$LOG" 2>&1; then
-            warn "opkg update failed. Trying install anyway (may use cached lists)."
-        fi
         # shellcheck disable=SC2086
-        if ! opkg install $need_pkgs >>"$LOG" 2>&1; then
+        if ! opkg_install_with_sig_recovery "$need_pkgs"; then
             # Show what failed and re-check whether the runtime is actually usable
-            tail -20 "$LOG" >&2
+            tail -25 "$LOG" >&2
             warn "opkg install failed. Re-checking if modules are usable anyway..."
 
             still_missing=""
@@ -180,12 +215,14 @@ check_prereqs() {
                 err "  • Firmware doesn't expose OpenWrt opkg repo (custom firmware Fudy/GL.iNet/etc.)"
                 err "  • /etc/opkg/distfeeds.conf has invalid URLs"
                 err "  • No internet on router right now"
+                err "  • Signature-trust failure (auto-recover already tried above)"
                 err ""
                 err "Workarounds:"
                 err "  1. Install manually with the firmware's own tool, then rerun:"
                 err "       SKIP_DEPS=1 sh install.sh install"
-                err "  2. Check sources:  cat /etc/opkg/distfeeds.conf"
-                err "  3. Or download .ipk manually and: opkg install /tmp/<pkg>.ipk"
+                err "  2. Check sources:    cat /etc/opkg/distfeeds.conf"
+                err "  3. Check sig config: cat /etc/opkg.conf"
+                err "  4. Or download .ipk manually and: opkg install /tmp/<pkg>.ipk"
                 die "Abort."
             else
                 warn "Some opkg installs failed but all modules are usable. Continuing."
