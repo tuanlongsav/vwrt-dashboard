@@ -605,17 +605,30 @@ end
 
 -- Get configured AT port for FM350
 function get_fm350_port()
-    -- SINGLE PORT STRATEGY: ttyUSB1/2 reported as unreliable/zombie.
-    -- Force ttyUSB3 to stay aligned with SMS driver.
-    if file_exists("/dev/ttyUSB3") then return "/dev/ttyUSB3" end
-    
-    -- Fallbacks
-    if file_exists("/dev/ttyUSB1") then return "/dev/ttyUSB1" end
-    if file_exists("/dev/ttyUSB2") then return "/dev/ttyUSB2" end
-    
+    -- Pick the AT port based on the detected modem family. Different chipsets
+    -- expose AT on different ttyUSB indexes:
+    --   FM350-GL / DW5821e / Sierra EM7565  → ttyUSB3
+    --   Quectel RM5xx / EC25 / EM12         → ttyUSB2
+    --   Fibocom L850/L860 / ZTE             → ttyUSB1
+    --   Huawei dongles                       → ttyUSB0
+    -- modem_db tells us the hint; we still verify the device exists before
+    -- returning it, and fall back to a probe if the hint is wrong.
+    local mod = detect_modem_once()
+    if mod and mod.at_port then
+        local hinted = "/dev/ttyUSB" .. tostring(mod.at_port)
+        if file_exists(hinted) then return hinted end
+    end
+
+    -- Probe order: previous default first (for backward compat with FM350),
+    -- then descending so we hit the typical AT slot on most modems.
+    for _, idx in ipairs({3, 2, 1, 0}) do
+        local p = "/dev/ttyUSB" .. idx
+        if file_exists(p) then return p end
+    end
+
     local _, dev = find_atc_interface()
     if dev and dev ~= "" and dev ~= "nil" then return dev end
-    return "/dev/ttyUSB3" -- Fallback
+    return "/dev/ttyUSB3"
 end
 
 local fm350_parser = require("services.parsers.fm350_at")
