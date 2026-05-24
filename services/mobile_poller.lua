@@ -838,24 +838,73 @@ function main()
 
                 -- Static Info Fetch (Retry ANY field if it's missing or '-')
                 _G.FM350_STATIC = _G.FM350_STATIC or {}
-                
-                -- 1. IMEI 
+
+                -- 0. Authoritative model from AT+CGMM
+                --    USB VID:PID is ambiguous on Quectel — multiple models
+                --    (RM502Q-AE, RM520N-GL, RM530N-GL, ...) share PID 2c7c:0801
+                --    in RNDIS/ECM mode. The modem itself reports its real model
+                --    via AT+CGMM, so trust that over the USB scan result.
+                if not _G.FM350_STATIC.model_verified then
+                    local cgmm_raw = exec_at_tty(port, "AT+CGMM")
+                    if cgmm_raw then
+                        local atmod = modem_db.find_by_at_response(cgmm_raw)
+                        if atmod then
+                            data_modem.manufacturer = atmod.vendor
+                            data_modem.model        = atmod.model
+                            _G.FM350_STATIC.model_verified = true
+                            os.execute("logger -t VWRT_POLLER 'AT+CGMM resolved modem: " ..
+                                       atmod.vendor .. " " .. atmod.model .. "'")
+                        else
+                            -- Even if not in our DB, surface the raw model string
+                            local raw_model = cgmm_raw:gsub("[\r\n]+", " "):match("[%w%-]+%-?%w*")
+                            if raw_model and raw_model ~= "OK" and raw_model ~= "AT" then
+                                data_modem.model = raw_model
+                                _G.FM350_STATIC.model_verified = true
+                            end
+                        end
+                    end
+                    os.execute("sleep 1")
+                else
+                    -- Once verified, keep using the cached values across polls
+                    if _G.FM350_STATIC.cached_vendor then data_modem.manufacturer = _G.FM350_STATIC.cached_vendor end
+                    if _G.FM350_STATIC.cached_model  then data_modem.model        = _G.FM350_STATIC.cached_model  end
+                end
+                -- Cache for subsequent polls
+                _G.FM350_STATIC.cached_vendor = data_modem.manufacturer
+                _G.FM350_STATIC.cached_model  = data_modem.model
+
+                -- 1. IMEI
                 if not _G.FM350_STATIC.imei or _G.FM350_STATIC.imei == "-" then
                     local imei_raw = exec_at_tty(port, "AT+CGSN")
-                    if imei_raw then 
+                    if imei_raw then
                         local imei = imei_raw:match("(%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d)")
                         if imei then _G.FM350_STATIC.imei = imei end
                     end
                     os.execute("sleep 1")
                 end
 
-                -- 2. Firmware
+                -- 2. Firmware. Try +GMR first (FM350), then +QGMR (Quectel).
                 if not _G.FM350_STATIC.firmware or _G.FM350_STATIC.firmware == "-" then
                     local fw_raw = exec_at_tty(port, "AT+GMR")
+                    local fw
                     if fw_raw then
-                        local fw = fw_raw:match("Revision: ([%w%.]+)") or fw_raw:match("([%d%.]+%.[%d%.]+)")
-                        if fw then _G.FM350_STATIC.firmware = fw end
+                        fw = fw_raw:match("Revision: ([%w%.]+)") or fw_raw:match("([%d%.]+%.[%d%.]+)")
                     end
+                    -- Quectel-specific firmware command
+                    if not fw and ((data_modem.manufacturer or ""):lower() == "quectel") then
+                        local qgmr_raw = exec_at_tty(port, "AT+QGMR")
+                        if qgmr_raw then
+                            -- Match the whole revision token, e.g. "RM520NGLAAR03A03M4G_A0.303.A0.303"
+                            for raw_line in qgmr_raw:gmatch("[^\r\n]+") do
+                                local line = raw_line:gsub("^%s+", ""):gsub("%s+$", "")
+                                if line ~= "" and line ~= "OK" and not line:find("^AT") then
+                                    fw = line
+                                    break
+                                end
+                            end
+                        end
+                    end
+                    if fw then _G.FM350_STATIC.firmware = fw end
                     os.execute("sleep 1")
                 end
                 

@@ -82,20 +82,48 @@ M.USB_IDS = {
 
 -- AT response → manufacturer/model mapping (used when USB ID lookup fails,
 -- e.g. modems behind serial-only bridges).
+-- Order matters: more-specific patterns must come BEFORE generic ones.
+-- AT+CGMM responses for the user's RM520N-GL look like "RM520NGLAA" or
+-- "RM520N-GL", so the RM520N pattern must come before any RM5xx fallback.
 M.AT_FALLBACK = {
-    { pattern = "FM350",              vendor = "Fibocom", model = "FM350-GL", network = "5G" },
-    { pattern = "FM150",              vendor = "Fibocom", model = "FM150-AE", network = "5G" },
-    { pattern = "RM5[0-9][0-9][NQ]",  vendor = "Quectel", model = "RM5xx",    network = "5G" },
-    { pattern = "RG500U",             vendor = "Quectel", model = "RG500U",   network = "5G" },
-    { pattern = "EM7565",             vendor = "Sierra",  model = "EM7565",   network = "4G" },
-    { pattern = "EM7455",             vendor = "Sierra",  model = "EM7455",   network = "4G" },
-    { pattern = "DW5821e",            vendor = "Dell",    model = "DW5821e",  network = "5G" },
-    { pattern = "SIM8200",            vendor = "SimCom",  model = "SIM8200",  network = "5G" },
-    { pattern = "EC25",               vendor = "Quectel", model = "EC25",     network = "4G" },
-    { pattern = "EC21",               vendor = "Quectel", model = "EC21",     network = "4G" },
-    { pattern = "FN980",              vendor = "Telit",   model = "FN980",    network = "5G" },
-    { pattern = "FN990",              vendor = "Telit",   model = "FN990",    network = "5G" },
-    { pattern = "LM960",              vendor = "Telit",   model = "LM960",    network = "4G" },
+    -- Quectel 5G (specific models first)
+    { pattern = "RM500Q",  vendor = "Quectel", model = "RM500Q-GL",  network = "5G" },
+    { pattern = "RM502Q",  vendor = "Quectel", model = "RM502Q-AE",  network = "5G" },
+    { pattern = "RM510Q",  vendor = "Quectel", model = "RM510Q-GL",  network = "5G" },
+    { pattern = "RM520N",  vendor = "Quectel", model = "RM520N-GL",  network = "5G" },
+    { pattern = "RM530N",  vendor = "Quectel", model = "RM530N-GL",  network = "5G" },
+    { pattern = "RG500U",  vendor = "Quectel", model = "RG500U-CN",  network = "5G" },
+    -- Quectel 4G LTE
+    { pattern = "EC25",    vendor = "Quectel", model = "EC25",       network = "4G" },
+    { pattern = "EC21",    vendor = "Quectel", model = "EC21",       network = "4G" },
+    { pattern = "EP06",    vendor = "Quectel", model = "EP06",       network = "4G" },
+    { pattern = "EM12",    vendor = "Quectel", model = "EM12-G",     network = "4G" },
+    { pattern = "EM160",   vendor = "Quectel", model = "EM160R-GL",  network = "4G" },
+    -- Quectel generic fallback (must be LAST among Quectel patterns)
+    { pattern = "RM5%d%dN", vendor = "Quectel", model = "RM5xx",      network = "5G" },
+    { pattern = "RM5%d%dQ", vendor = "Quectel", model = "RM5xx",      network = "5G" },
+    -- Fibocom
+    { pattern = "FM350",   vendor = "Fibocom", model = "FM350-GL",   network = "5G" },
+    { pattern = "FM150",   vendor = "Fibocom", model = "FM150-AE",   network = "5G" },
+    { pattern = "L850",    vendor = "Fibocom", model = "L850-GL",    network = "4G" },
+    { pattern = "L860",    vendor = "Fibocom", model = "L860-GL",    network = "4G" },
+    -- Sierra
+    { pattern = "EM7565",  vendor = "Sierra",  model = "EM7565",     network = "4G" },
+    { pattern = "EM7455",  vendor = "Sierra",  model = "EM7455",     network = "4G" },
+    { pattern = "EM7411",  vendor = "Sierra",  model = "EM7411",     network = "4G" },
+    { pattern = "EM9190",  vendor = "Sierra",  model = "EM9190",     network = "5G" },
+    { pattern = "MC7455",  vendor = "Sierra",  model = "MC7455",     network = "4G" },
+    -- Dell (rebrand)
+    { pattern = "DW5821e", vendor = "Dell",    model = "DW5821e",    network = "5G" },
+    { pattern = "DW5829e", vendor = "Dell",    model = "DW5829e",    network = "5G" },
+    { pattern = "DW5811e", vendor = "Dell",    model = "DW5811e",    network = "4G" },
+    -- Telit
+    { pattern = "FN980",   vendor = "Telit",   model = "FN980",      network = "5G" },
+    { pattern = "FN990",   vendor = "Telit",   model = "FN990",      network = "5G" },
+    { pattern = "LM960",   vendor = "Telit",   model = "LM960",      network = "4G" },
+    -- SimCom
+    { pattern = "SIM8200", vendor = "SimCom",  model = "SIM8200EA-M2", network = "5G" },
+    { pattern = "SIM7600", vendor = "SimCom",  model = "SIM7600",    network = "4G" },
 }
 
 -- Look up a modem entry by USB VID:PID string (e.g. "2c7c:0800")

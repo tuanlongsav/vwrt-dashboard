@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.3",
+        "version": "1.0.4",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "Fix Quectel modem rơi vào path mmcli sai → cache 'No Device'.\n- Poller giờ chọn AT-based path khi USB scan tìm thấy modem trong modem_db (kể cả khi UCI không có proto=atc).\n- Trên Fudy, proto là 'wwan'/'modemmanager' không phải 'atc' → trước đó vào nhánh mmcli, mmcli không detect RM520 → ghi 'No Device' vào cache.\n- Sửa: nếu modem_db.scan_usb() trả về vendor (Quectel/Fibocom/Sierra/...) thì ép path 1 (AT) thay vì path 2 (mmcli).\n- Hệ quả: RM520N-GL giờ chạy AT+QENG/CSQ/QCAINFO → có RSRP/SINR đầy đủ + VinaPhone hiển thị đúng."
+        "log": "Fix model modem hiển thị sai (RM520 ra RM502).\n- Vấn đề: Quectel RM5xx series chia sẻ USB PID 2c7c:0801 ở RNDIS mode, USB scan không phân biệt được model cụ thể.\n- Sửa: query AT+CGMM (modem tự khai) để override USB-detected model. Authoritative source.\n- Mở rộng AT_FALLBACK trong modem_db: pattern riêng cho RM500Q, RM502Q, RM510Q, RM520N, RM530N (specific) đặt trước RM5xx (generic).\n- Thêm AT+QGMR cho firmware Quectel (vd 'RM520NGLAAR03A03M4G_A0.303.A0.303').\n- Cache model verified — chỉ query 1 lần, không tăng load."
     }
 }
