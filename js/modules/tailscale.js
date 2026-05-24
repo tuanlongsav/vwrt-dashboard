@@ -58,7 +58,7 @@ const TailscaleModule = {
                     .ts-alert-warning { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
                     .ts-alert-error { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
                     .ts-label-main { font-weight: 700; color: #1e293b; font-size: 16px; margin-bottom: 4px; }
-                    .ts-label-sub { font-size: 13px; color: #64748b; }
+                    .ts-label-sub { font-size: 15px; color: #64748b; }
 
                     /* Dark Mode Overrides */
                     [data-theme="dark"] .ts-body { background: #1a202c; color: #e2e8f0; }
@@ -252,9 +252,9 @@ const TailscaleModule = {
                             <div class="ts-label-sub" style="color: #059669; font-weight: 700; font-size: 15px;">
                                 ${displayName}
                             </div>
-                            <div style="font-size: 12px; color: #64748b;">${loginName}</div>
+                            <div style="font-size: 14px; color: #64748b;">${loginName}</div>
                         </div>
-                        <button onclick="TailscaleModule.logout()" style="color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.2s;">
+                        <button onclick="TailscaleModule.logout()" style="color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; transition: all 0.2s;">
                             Log out and Unbind
                         </button>
                     </div>
@@ -301,7 +301,7 @@ const TailscaleModule = {
             
             ${needsLogin ? `
                 <div style="margin-top: 15px; text-align: center;">
-                    <span style="font-size: 13px; color: #64748b;">Hoặc</span>
+                    <span style="font-size: 15px; color: #64748b;">Hoặc</span>
                     <button onclick="TailscaleModule.getAuthUrl()" style="display: block; width: 100%; margin-top: 10px; padding: 12px; background: transparent; border: 2px solid #fdba74; color: #ea580c; border-radius: 10px; font-weight: 700; cursor: pointer;">
                         🔐 Lấy link đăng nhập
                     </button>
@@ -340,7 +340,7 @@ const TailscaleModule = {
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                      </div>
                      <div>
-                        <div class="ts-text-secondary" style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Thiết bị này</div>
+                        <div class="ts-text-secondary" style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Thiết bị này</div>
                         <div class="ts-text-primary" style="font-size: 18px; font-weight: 800;">${self.HostName || 'Unknown'}</div>
                         <div style="font-family: 'Consolas', monospace; color: #3b82f6; font-size: 14px; margin-top: 2px;">${(self.TailscaleIPs || [])[0] || '-'}</div>
                      </div>
@@ -349,7 +349,7 @@ const TailscaleModule = {
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px;">
                 <div class="ts-text-primary" style="font-weight: 700;">Danh sách thiết bị (${Object.keys(peers).length})</div>
-                <div class="ts-text-secondary" style="font-size: 12px;">Trạng thái cập nhật mỗi 5s</div>
+                <div class="ts-text-secondary" style="font-size: 14px;">Trạng thái cập nhật mỗi 5s</div>
             </div>
 
             <div class="peer-grid">
@@ -371,7 +371,7 @@ const TailscaleModule = {
                         </div>
                         <div style="flex: 1; min-width: 0;">
                             <div class="ts-text-primary" style="font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${peer.HostName}">${peer.HostName}</div>
-                            <div class="ts-text-secondary" style="font-size: 11px; font-family: monospace;">${(peer.TailscaleIPs || [])[0] || ''}</div>
+                            <div class="ts-text-secondary" style="font-size: 13px; font-family: monospace;">${(peer.TailscaleIPs || [])[0] || ''}</div>
                         </div>
                     </div>
                 `;

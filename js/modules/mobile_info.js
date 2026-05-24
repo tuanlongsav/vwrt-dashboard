@@ -62,7 +62,7 @@ const MobileModule = {
                 </div>
                 <div class="ph-info" style="flex: 1;">
                     <h4 id="mob-operator" style="margin: 0; font-size: 14px; color: var(--text-main);">Đang tải...</h4>
-                    <span id="mob-mode" style="font-size: 11px; color: var(--text-sub);">Checking...</span>
+                    <span id="mob-mode" style="font-size: 13px; color: var(--text-sub);">Checking...</span>
                 </div>
             </div>
             
@@ -77,36 +77,36 @@ const MobileModule = {
                     </div>
                     <div class="signal-text-group" style="margin-left: 10px;">
                         <span class="signal-dbm" id="mob-signal" style="font-weight: bold; font-size: 14px; color: var(--text-main);">-- %</span>
-                        <span class="signal-type" id="mob-status" style="font-size: 10px; color: var(--text-sub); display: block;">--</span>
+                        <span class="signal-type" id="mob-status" style="font-size: 12px; color: var(--text-sub); display: block;">--</span>
                     </div>
                 </div>
 
-                <div style="margin-bottom: 5px; font-size: 12px; display: flex; justify-content: space-between;">
+                <div style="margin-bottom: 5px; font-size: 14px; display: flex; justify-content: space-between;">
                     <span style="color: var(--text-sub);">Thiết bị</span> 
                     <span style="font-weight: 600; color: var(--text-main);" id="mob-model">--</span>
                 </div>
-                <div style="margin-bottom: 5px; font-size: 12px; display: flex; justify-content: space-between;">
+                <div style="margin-bottom: 5px; font-size: 14px; display: flex; justify-content: space-between;">
                     <span style="color: var(--text-sub);">Firmware</span> 
                     <span style="font-weight: 600; color: var(--text-main);" id="mob-fw">--</span>
                 </div>
                 <div style="border-bottom: 1px dashed var(--border-color); margin: 5px 0;"></div>
 
-                <div style="margin-bottom: 5px; font-size: 12px; display: flex; justify-content: space-between;">
+                <div style="margin-bottom: 5px; font-size: 14px; display: flex; justify-content: space-between;">
                     <span style="color: var(--text-sub);">Hãng SX</span> 
                     <span style="font-weight: 600; color: var(--text-main);" id="mob-provider">--</span>
                 </div>
-                <div style="margin-bottom: 5px; font-size: 12px; display: flex; justify-content: space-between;">
+                <div style="margin-bottom: 5px; font-size: 14px; display: flex; justify-content: space-between;">
                     <span style="color: var(--text-sub);">Băng tần chính</span> 
                     <span style="font-weight: 600; color: var(--text-main);" id="mob-band-main">--</span>
                 </div>
 
                 <div style="border-bottom: 1px dashed var(--border-color); margin: 5px 0;"></div>
                 
-                <div style="margin-bottom: 5px; font-size: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="margin-bottom: 5px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-sub);">TTL Custom</span> 
                     <div style="display:flex; gap:5px;">
-                        <input type="number" id="inp-ttl" placeholder="IPv4 TTL" style="width:60px; padding:2px 5px; border:1px solid var(--border-color); border-radius:4px; font-size:12px;">
-                        <button onclick="MobileModule.setTTL()" style="border:none; background:var(--primary-color, #3182ce); color:white; border-radius:4px; padding:2px 8px; font-size:11px; cursor:pointer;">Set</button>
+                        <input type="number" id="inp-ttl" placeholder="IPv4 TTL" style="width:60px; padding:2px 5px; border:1px solid var(--border-color); border-radius:4px; font-size:14px;">
+                        <button onclick="MobileModule.setTTL()" style="border:none; background:var(--primary-color, #3182ce); color:white; border-radius:4px; padding:2px 8px; font-size:13px; cursor:pointer;">Set</button>
                     </div>
                 </div>
             </div>
@@ -355,7 +355,7 @@ const MobileModule = {
                             }
                             .sys-row {
                                 display: flex; justify-content: space-between;
-                                font-size: 13px;
+                                font-size: 15px;
                                 margin-bottom: 6px;
                             }
                             .sys-row:last-child { margin-bottom: 0; }
@@ -383,7 +383,7 @@ const MobileModule = {
                                 </div>
                                 <div>
                                     <div style="font-size: 19px; font-weight: 700; margin-bottom: 2px;">Thông tin Modem</div>
-                                    <div style="font-size: 12px; opacity: 0.85;">Quản lý kết nối</div>
+                                    <div style="font-size: 14px; opacity: 0.85;">Quản lý kết nối</div>
                                 </div>
                             </div>
                             
@@ -452,14 +452,14 @@ const MobileModule = {
                 title: "Cấu hình TTL (Bypass Hotspot)",
                 content: `
                     <div style="padding: 10px;">
-                        <p style="margin-bottom: 15px; color: var(--text-sub); font-size: 13px;">
+                        <p style="margin-bottom: 15px; color: var(--text-sub); font-size: 15px;">
                             Nhập giá trị TTL (thường là <b>64</b> hoặc <b>65</b> để bypass):
                         </p>
                         <div style="display:flex; gap:10px; justify-content:center;">
                             <input type="number" id="modal-ttl-input" placeholder="Ví dụ: 64" value="${current}" 
                                 style="padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; width: 100px; text-align: center; font-weight: bold;">
                         </div>
-                        <div style="margin-top: 15px; font-size: 12px; color: #718096; text-align: center;">
+                        <div style="margin-top: 15px; font-size: 14px; color: #718096; text-align: center;">
                             Để trống hoặc nhập 0 để tắt tính năng này.
                         </div>
                     </div>

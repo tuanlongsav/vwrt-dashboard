@@ -174,7 +174,7 @@ button:disabled {
 .footer-text {
     margin-top: 20px;
     color: rgba(255, 255, 255, 0.8);
-    font-size: 12px;
+    font-size: 14px;
 }
 
 @keyframes shake {
@@ -186,7 +186,7 @@ button:disabled {
 }
 .footer-info {
     text-align: center;
-    font-size: 12px;
+    font-size: 14px;
     color: var(--text-sub, #718096); 
     margin-top: 30px;
     padding: 20px 0;

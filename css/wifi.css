@@ -13,7 +13,7 @@
 .wifi-info-row {
     display: flex; 
     justify-content: space-between; 
-    font-size: 12px; 
+    font-size: 14px; 
     margin-bottom: 5px; 
     color: var(--text-main); 
     font-weight: bold;
@@ -25,7 +25,7 @@
 }
 
 .wifi-pass-container label { 
-    font-size: 12px; 
+    font-size: 14px; 
     color: var(--text-sub); 
     margin-bottom: 5px; 
     display: block; 

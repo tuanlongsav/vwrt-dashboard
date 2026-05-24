@@ -20,10 +20,10 @@ const Mwan3Module = {
                     .mw-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 15px; }
                     .mw-status-card { background: linear-gradient(to right, #f8fafc, #ffffff); }
                     .mw-table { width: 100%; border-collapse: collapse; }
-                    .mw-table th { text-align: left; padding: 12px; border-bottom: 2px solid #f1f5f9; color: #64748b; font-size: 13px; text-transform: uppercase; }
+                    .mw-table th { text-align: left; padding: 12px; border-bottom: 2px solid #f1f5f9; color: #64748b; font-size: 15px; text-transform: uppercase; }
                     .mw-table td { padding: 12px; border-bottom: 1px solid #f8fafc; color: #334155; font-size: 14px; }
-                    .mw-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-                    .mw-guide-box { margin-top: 20px; padding: 15px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; font-size: 13px; color: #92400e; }
+                    .mw-badge { padding: 4px 10px; border-radius: 6px; font-size: 14px; font-weight: 600; }
+                    .mw-guide-box { margin-top: 20px; padding: 15px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; font-size: 15px; color: #92400e; }
                     
                     /* Buttons */
                     .mw-btn { padding: 8px 15px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
@@ -164,12 +164,12 @@ const Mwan3Module = {
                         <div class="status-label" style="font-weight: 800; color: #1e293b; text-transform: uppercase; font-size: 18px; line-height: 1.2;">
                             ${name}
                         </div>
-                        <div class="status-text" style="font-size: 13px; font-weight: 500; color: ${color}; opacity: 0.9;">
+                        <div class="status-text" style="font-size: 15px; font-weight: 500; color: ${color}; opacity: 0.9;">
                             ${statusText}
                         </div>
                     </div>
                     ${iface.load && iface.load !== '0%' ? `
-                        <div style="background: ${color}; color: white; font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="background: ${color}; color: white; font-size: 14px; padding: 4px 10px; border-radius: 20px; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             ${iface.load}
                         </div>
                     ` : ''}
@@ -209,7 +209,7 @@ const Mwan3Module = {
         let html = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                  <h3 style="color: #1e293b; margin: 0;">Danh sách đường truyền</h3>
-                 <div style="font-size: 12px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 5px 12px; border-radius: 20px;">Tự động lưu</div>
+                 <div style="font-size: 14px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 5px 12px; border-radius: 20px;">Tự động lưu</div>
             </div>
             
             <table class="mw-table">
@@ -257,7 +257,7 @@ const Mwan3Module = {
                         <div>
                             <div class="mw-guide-header" style="font-weight: 600; margin-bottom: 4px;">1. Gộp mạng (Cân bằng tải):</div>
                             <div style="margin-bottom: 6px;">Đặt <strong>Độ ưu tiên bằng nhau</strong> (vd: tất cả là 1).</div>
-                            <div style="font-size: 13px;">
+                            <div style="font-size: 15px;">
                                 Router chia tải theo <strong>Tỷ lệ (Weight)</strong>.<br>
                                 Ví dụ muốn chia <strong>Wan 60% - 5G 40%</strong>:
                                 <ul class="mw-guide-ul">
@@ -289,7 +289,7 @@ const Mwan3Module = {
         let html = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                  <h3 style="color: #1e293b; margin: 0;">Cấu hình Tracking (Ping)</h3>
-                 <div style="font-size: 13px; color: #64748b;">Giúp Router biết mạng có thực sự mất kết nối hay không.</div>
+                 <div style="font-size: 15px; color: #64748b;">Giúp Router biết mạng có thực sự mất kết nối hay không.</div>
             </div>
             
             <div style="max-height: 400px; overflow-y: auto; margin: -10px; padding: 10px;">

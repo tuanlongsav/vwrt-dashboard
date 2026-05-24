@@ -32,7 +32,7 @@ const RebootScheduleModule = {
                             <div style="font-weight:600; font-size:14px; color:var(--text-primary, #2d3748);">
                                 ⏰ ${s.time || '--:--'}
                             </div>
-                            <div style="font-size:12px; color:var(--text-secondary, #718096); margin-top:2px;">Ngày: ${s.days === '*' ? 'Mỗi ngày' : this.formatDays(s.days)}</div>
+                            <div style="font-size:14px; color:var(--text-secondary, #718096); margin-top:2px;">Ngày: ${s.days === '*' ? 'Mỗi ngày' : this.formatDays(s.days)}</div>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px;">
                             <label class="schedule-switch" style="position:relative; display:inline-block; width:44px; height:24px;">
@@ -48,12 +48,12 @@ const RebootScheduleModule = {
         const content = `
             <div style="text-align:left;">
                 <div style="padding:12px 15px; background:linear-gradient(135deg, rgba(237,137,54,0.1), rgba(229,62,62,0.1)); border-radius:12px; margin-bottom:20px;">
-                    <div style="font-weight:600; font-size:13px; color:var(--text-primary, #c05621);">Lên lịch Khởi động lại</div>
-                    <div style="font-size:12px; color:var(--text-secondary, #718096);">Tự động khởi động lại thiết bị để giải phóng RAM/Cache</div>
+                    <div style="font-weight:600; font-size:15px; color:var(--text-primary, #c05621);">Lên lịch Khởi động lại</div>
+                    <div style="font-size:14px; color:var(--text-secondary, #718096);">Tự động khởi động lại thiết bị để giải phóng RAM/Cache</div>
                 </div>
                 
                 <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
-                    <button onclick="RebootScheduleModule.showAddForm()" style="background:#ed8936; color:white; border:none; border-radius:6px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                    <button onclick="RebootScheduleModule.showAddForm()" style="background:#ed8936; color:white; border:none; border-radius:6px; padding:6px 14px; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:4px;">
                         <span style="font-size:14px;">+</span> Thêm lịch
                     </button>
                 </div>
@@ -109,7 +109,7 @@ const RebootScheduleModule = {
                 <div class="modal-box" style="max-width:320px;">
                     <h3>Thêm lịch mới</h3>
                     <div style="text-align:left; margin-top:15px;">
-                        <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px;">Giờ thực hiện (24h):</label>
+                        <label style="display:block; font-size:14px; font-weight:bold; margin-bottom:5px;">Giờ thực hiện (24h):</label>
                         <div style="display:flex; gap:10px;">
                             <select id="sch-hour" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:16px; appearance:none; background:#fff;">
                                 ${Array.from({length:24}, (_, i) => `<option value="${i.toString().padStart(2, '0')}">${i.toString().padStart(2, '0')}</option>`).join('')}
@@ -120,7 +120,7 @@ const RebootScheduleModule = {
                             </select>
                         </div>
                         
-                        <label style="display:block; font-size:12px; font-weight:bold; margin:15px 0 5px;">Lặp lại:</label>
+                        <label style="display:block; font-size:14px; font-weight:bold; margin:15px 0 5px;">Lặp lại:</label>
                         <div style="display:flex; flex-wrap:wrap; gap:5px;" id="sch-days-container">
                             <label><input type="checkbox" value="1" checked> T2</label>
                             <label><input type="checkbox" value="2" checked> T3</label>

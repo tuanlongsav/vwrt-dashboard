@@ -291,26 +291,26 @@ const SidebarModule = {
                                     <div style="text-align: left; min-width:0;">
                                         <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px; flex-wrap:wrap;">
                                             <span style="font-weight:700; font-size:16px; color:var(--text-main); white-space:nowrap;">${net.label || net.name}</span>
-                                            <span style="font-size:10px; padding:2px 6px; border-radius:4px; background:${isUp ? '#c6f6d5' : '#fed7d7'}; color:${isUp ? '#22543d' : '#822727'}; font-weight:700;">${isUp ? 'ONLINE' : 'OFFLINE'}</span>
+                                            <span style="font-size:12px; padding:2px 6px; border-radius:4px; background:${isUp ? '#c6f6d5' : '#fed7d7'}; color:${isUp ? '#22543d' : '#822727'}; font-weight:700;">${isUp ? 'ONLINE' : 'OFFLINE'}</span>
                                         </div>
-                                        <div style="font-size:11px; color:var(--text-sub); font-family:monospace; opacity:0.8; text-align: left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${(net.mac || "").toUpperCase()}</div>
+                                        <div style="font-size:13px; color:var(--text-sub); font-family:monospace; opacity:0.8; text-align: left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${(net.mac || "").toUpperCase()}</div>
                                     </div>
                                 </div>
-                                <div style="font-size:11px; color:var(--text-sub); background:var(--bg-body); padding:4px 8px; border-radius:6px; border:1px solid var(--border-color); font-weight:600; flex-shrink:0;">${net.name}</div>
+                                <div style="font-size:13px; color:var(--text-sub); background:var(--bg-body); padding:4px 8px; border-radius:6px; border:1px solid var(--border-color); font-weight:600; flex-shrink:0;">${net.name}</div>
                             </div>
 
                             <!-- Traffic Stats (More Modern) -->
                             <div class="net-modal-stats" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:1px; margin-bottom:12px; background:var(--border-color); border-radius:10px; overflow:hidden; border:1px solid var(--border-color);">
                                 <div class="net-modal-stat-box" style="background:var(--bg-card); padding:10px; text-align:center;">
-                                    <div style="font-size:10px; color:#48bb78; font-weight:700; margin-bottom:4px;">▼ DOWNLOAD</div>
+                                    <div style="font-size:12px; color:#48bb78; font-weight:700; margin-bottom:4px;">▼ DOWNLOAD</div>
                                     <div style="font-size:14px; font-weight:700; color:var(--text-main);">${this.formatBytes(rx)}</div>
                                 </div>
                                 <div class="net-modal-stat-box" style="background:var(--bg-card); padding:10px; text-align:center;">
-                                    <div style="font-size:10px; color:#3182ce; font-weight:700; margin-bottom:4px;">▲ UPLOAD</div>
+                                    <div style="font-size:12px; color:#3182ce; font-weight:700; margin-bottom:4px;">▲ UPLOAD</div>
                                     <div style="font-size:14px; font-weight:700; color:var(--text-main);">${this.formatBytes(tx)}</div>
                                 </div>
                                 <div class="net-modal-stat-box" style="background:var(--bg-card); padding:10px; text-align:center;">
-                                    <div style="font-size:10px; color:var(--text-sub); font-weight:700; margin-bottom:4px;">∑ TOTAL</div>
+                                    <div style="font-size:12px; color:var(--text-sub); font-weight:700; margin-bottom:4px;">∑ TOTAL</div>
                                     <div style="font-size:14px; font-weight:700; color:var(--text-main);">${this.formatBytes(rx+tx)}</div>
                                 </div>
                             </div>
@@ -318,13 +318,13 @@ const SidebarModule = {
                             <!-- IP Info (Gom nhóm gọn gàng) -->
                             <div class="net-modal-ip-info" style="background:var(--bg-body); border-radius:10px; padding:10px 15px; border:1px solid var(--border-color);">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                                    <span style="font-size:12px; color:var(--text-sub); font-weight:500;">IPv4:</span>
-                                    <span style="font-family:monospace; font-weight:700; color:${net.ipv4 === '--' ? '#e53e3e' : '#3182ce'}; font-size:13px;">${net.ipv4}</span>
+                                    <span style="font-size:14px; color:var(--text-sub); font-weight:500;">IPv4:</span>
+                                    <span style="font-family:monospace; font-weight:700; color:${net.ipv4 === '--' ? '#e53e3e' : '#3182ce'}; font-size:15px;">${net.ipv4}</span>
                                 </div>
                                 ${net.ipv6 && net.ipv6 !== '--' ? `
                                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <span style="font-size:12px; color:var(--text-sub); font-weight:500;">IPv6:</span>
-                                    <span style="font-family:monospace; color:#805ad5; font-size:11px; text-align:right; max-width:200px; overflow:hidden; text-overflow:ellipsis;">${net.ipv6}</span>
+                                    <span style="font-size:14px; color:var(--text-sub); font-weight:500;">IPv6:</span>
+                                    <span style="font-family:monospace; color:#805ad5; font-size:13px; text-align:right; max-width:200px; overflow:hidden; text-overflow:ellipsis;">${net.ipv6}</span>
                                 </div>
                                 ` : ''}
                             </div>

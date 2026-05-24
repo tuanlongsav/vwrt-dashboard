@@ -80,12 +80,12 @@ const LedModule = {
                     <div style="display:flex; align-items:center; gap:12px; flex: 1; overflow: hidden;">
                         <span style="font-size:18px;">${led.name.includes('wifi') ? '📡' : (led.name.includes('power') ? '⚡' : '💡')}</span>
                         <div style="overflow: hidden;">
-                            <div style="font-weight:600; font-size:13px; color:var(--text-primary, #2d3748); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${led.name}">${getDisplayName(led.name)}</div>
-                            <div style="font-size:11px; color:var(--text-secondary, #718096);">Gốc: ${led.name}</div>
+                            <div style="font-weight:600; font-size:15px; color:var(--text-primary, #2d3748); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${led.name}">${getDisplayName(led.name)}</div>
+                            <div style="font-size:13px; color:var(--text-secondary, #718096);">Gốc: ${led.name}</div>
                         </div>
                     </div>
                     <div style="margin-left: 10px;">
-                        <select class="led-trigger-select" data-led="${led.name}" style="padding: 5px 8px; border-radius: 6px; border: 1px solid #cbd5e0; font-size: 11px; background: white; outline: none; cursor:pointer;">
+                        <select class="led-trigger-select" data-led="${led.name}" style="padding: 5px 8px; border-radius: 6px; border: 1px solid #cbd5e0; font-size: 13px; background: white; outline: none; cursor:pointer;">
                             ${options}
                         </select>
                     </div>
@@ -106,7 +106,7 @@ const LedModule = {
                 </div>
                 
                 <div id="auto-led-settings" style="display: ${auto.enabled ? 'block' : 'none'};">
-                    <div style="font-size:11px; color:#c53030; margin-bottom:12px; background: #fff5f5; padding: 10px; border-radius: 8px; border-left: 4px solid #f56565;">
+                    <div style="font-size:13px; color:#c53030; margin-bottom:12px; background: #fff5f5; padding: 10px; border-radius: 8px; border-left: 4px solid #f56565;">
                         <strong>💡 Mẹo:</strong> Khi vừa khởi động và chưa xác định được loại mạng, hệ thống sẽ tự động sáng <strong>CẢ HAI</strong> LED 4G + 5G để báo hiệu đã có kết nối.
                     </div>
                     
@@ -120,14 +120,14 @@ const LedModule = {
                         
                         return `
                             <div style="margin-bottom:12px; background:white; padding:10px; border-radius:8px;">
-                                <div style="font-size:13px; font-weight:600; margin-bottom:8px;">
+                                <div style="font-size:15px; font-weight:600; margin-bottom:8px;">
                                     ${status === '5G' ? '⚡ Mạng 5G' : '📱 Mạng 4G'}
                                 </div>
                                 <div style="display:flex; gap:5px;">
-                                    <select class="auto-led-mapping-select" data-status="${status}" style="padding:5px; font-size:12px; border-radius:5px; border:1px solid #ddd; flex:1;">
+                                    <select class="auto-led-mapping-select" data-status="${status}" style="padding:5px; font-size:14px; border-radius:5px; border:1px solid #ddd; flex:1;">
                                         ${ledOptions}
                                     </select>
-                                    <select class="auto-led-effect-select" data-status="${status}" style="padding:5px; font-size:12px; border-radius:5px; border:1px solid #ddd; width:100px;">
+                                    <select class="auto-led-effect-select" data-status="${status}" style="padding:5px; font-size:14px; border-radius:5px; border:1px solid #ddd; width:100px;">
                                         <option value="default-on" ${firstRule.trigger === 'default-on' ? 'selected' : ''}>Sáng tĩnh</option>
                                         <option value="netdev" ${firstRule.trigger === 'netdev' ? 'selected' : ''}>Nháy data</option>
                                     </select>
@@ -156,7 +156,7 @@ const LedModule = {
         const content = `
             <div style="text-align:left;">
                 <div style="padding:10px 15px; background:linear-gradient(135deg, rgba(49,130,206,0.1), rgba(56,161,105,0.1)); border-radius:12px; margin-bottom:15px;">
-                    <div style="font-weight:600; font-size:13px; color:var(--text-primary, #2d3748);">LED & Tự động hóa</div>
+                    <div style="font-weight:600; font-size:15px; color:var(--text-primary, #2d3748);">LED & Tự động hóa</div>
                 </div>
                 
                 <div id="led-list" style="max-height:220px; overflow-y:auto; padding-right: 5px;">

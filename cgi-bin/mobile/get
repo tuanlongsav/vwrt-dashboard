@@ -18,10 +18,35 @@ function read_file(path)
     return content
 end
 
+-- Quick check: is the poller running and producing output?
+local function poller_status()
+    -- 1. Is the process alive?
+    local p = io.popen("pgrep -f mobile_poller.lua 2>/dev/null")
+    local pid = p and p:read("*l") or nil
+    if p then p:close() end
+
+    if not pid or pid == "" then
+        return "not_running", "mobile_poller chưa chạy. SSH: /etc/init.d/mobile_poller start"
+    end
+
+    -- 2. Is the cache file fresh? (poller writes every 5–15s)
+    local h = io.popen("date -r " .. cache_file .. " +%s 2>/dev/null")
+    local mtime = h and tonumber(h:read("*l") or "0") or 0
+    if h then h:close() end
+    local age = os.time() - mtime
+    if mtime == 0 then
+        return "no_cache", "Poller đang chạy nhưng chưa ghi cache. Đợi 15s rồi reload."
+    end
+    if age > 60 then
+        return "stale", string.format("Cache cũ %ds — poller có thể stuck. SSH: logread | tail | grep VWRT_POLLER", age)
+    end
+    return "ok", nil
+end
+
 function get_data()
     local content = read_file(cache_file)
     local data = {}
-    
+
     if content and content ~= "" then
         local ok, parsed = pcall(cjson.decode, content)
         if ok and parsed then
@@ -68,7 +93,9 @@ function get_data()
         data.mode = "Checking..."
     end
 
-    return { status = "success", data = data }
+    -- Surface poller diagnostic so the dashboard can show why "NO DEVICE"
+    local pstate, pmsg = poller_status()
+    return { status = "success", data = data, poller = { state = pstate, message = pmsg } }
 end
 
 print("Content-type: application/json\n\n")

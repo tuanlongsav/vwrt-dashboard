@@ -44,8 +44,8 @@ const AdBlockModule = {
                         </label>
                     </div>
                     <div style="flex:1; overflow:hidden;">
-                        <div style="font-weight:700; font-size:13px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeName}</div>
-                        <div style="font-size:11px; color:var(--text-sub); opacity:0.7;">${sizeDisplay}</div>
+                        <div style="font-weight:700; font-size:15px; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${safeName}</div>
+                        <div style="font-size:13px; color:var(--text-sub); opacity:0.7;">${sizeDisplay}</div>
                     </div>
                     <button onclick="AdBlockModule.deleteList('${escapedName}', '${escapedUrl}')" class="adblock-item-del" title="Xóa">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
@@ -61,12 +61,12 @@ const AdBlockModule = {
                 <!-- Status Row -->
                 <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; padding:15px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow);">
                     <div>
-                        <div style="font-size:11px; color:var(--text-sub); opacity:0.8; font-weight:700;">VERSION ${status.version || "1.2.x"}</div>
+                        <div style="font-size:13px; color:var(--text-sub); opacity:0.8; font-weight:700;">VERSION ${status.version || "1.2.x"}</div>
                         <div style="font-size:16px; font-weight:800; color:var(--text-main);">${enabled ? "ĐANG HOẠT ĐỘNG" : "ĐANG TẮT"}</div>
                     </div>
                     <div style="text-align:right;">
                         <div style="font-size:18px; font-weight:900; color:var(--ad-accent, #6366f1);">${(parseInt(status.blocked_domains || 0) / 1000).toFixed(1)}k</div>
-                        <div style="font-size:10px; color:var(--text-sub); font-weight:700; text-transform:uppercase;">DOMAINS</div>
+                        <div style="font-size:12px; color:var(--text-sub); font-weight:700; text-transform:uppercase;">DOMAINS</div>
                     </div>
                 </div>
 
@@ -81,7 +81,7 @@ const AdBlockModule = {
 
                 <!-- Filter Header -->
                 <div style="display:flex; align-items:center; justify-content:space-between; margin:0 0 10px 0; padding:0 5px;">
-                    <div style="font-size:11px; font-weight:800; color:var(--text-sub); opacity:0.8; letter-spacing:1px; text-transform:uppercase;">BỘ LỌC (${lists.length})</div>
+                    <div style="font-size:13px; font-weight:800; color:var(--text-sub); opacity:0.8; letter-spacing:1px; text-transform:uppercase;">BỘ LỌC (${lists.length})</div>
                     <button id="adblock-add-btn" class="modern-action-btn">+ Thêm mới</button>
                 </div>
 
@@ -102,7 +102,7 @@ const AdBlockModule = {
                 /* HIDE DEFAULT MODAL CLOSE BUTTON - the one with &times; character */
                 .modal-box > button:first-child { display: none !important; }
                 
-                .modern-action-btn { background: var(--ad-accent); color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
+                .modern-action-btn { background: var(--ad-accent); color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
                 .modern-scrollable-list { max-height: 230px; overflow-y: auto; padding-right: 5px; }
                 .modern-scrollable-list::-webkit-scrollbar { width: 4px; }
                 .modern-scrollable-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
@@ -265,12 +265,12 @@ const AdBlockModule = {
             <h3 style="margin: 0 0 25px 0; font-size: 20px; font-weight: 800; text-align: center; background: linear-gradient(135deg, var(--accent-color), #63b3ed); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Thêm danh sách mới</h3>
             
             <div style="margin-bottom: 20px;">
-                <label style="display: block; font-weight: 700; font-size: 11px; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Tên danh sách</label>
+                <label style="display: block; font-weight: 700; font-size: 13px; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Tên danh sách</label>
                 <input type="text" id="adblock-new-name" class="premium-input" placeholder="VD: Hagezi Pro" autocomplete="off">
             </div>
             
             <div style="margin-bottom: 30px;">
-                <label style="display: block; font-weight: 700; font-size: 11px; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">URL danh sách</label>
+                <label style="display: block; font-weight: 700; font-size: 13px; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">URL danh sách</label>
                 <input type="text" id="adblock-new-url" class="premium-input" placeholder="https://example.com/list.txt" autocomplete="off">
             </div>
 

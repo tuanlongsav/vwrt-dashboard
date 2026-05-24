@@ -46,10 +46,10 @@ const ClientsModule = {
                 }
                 .c-info { flex: 1; margin: 0 15px; min-width: 0; }
                 .c-name { font-weight: 700; font-size: 14px; color: var(--text-main); margin-bottom: 2px; }
-                .c-meta { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-sub); }
+                .c-meta { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-sub); }
                 .c-stats { text-align: right; min-width: 90px; }
                 .c-total { font-weight: 700; font-size: 14px; color: var(--text-main); }
-                .c-time { font-size: 11px; color: var(--text-sub); }
+                .c-time { font-size: 13px; color: var(--text-sub); }
                 .btn-manage {
                     color: var(--accent-color); opacity: 0.6; padding-left: 10px;
                 }
@@ -144,7 +144,7 @@ const ClientsModule = {
             <div style="min-height:300px;">
                 <div style="margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
                     <h3 style="margin:0; font-size:16px; font-weight:700; color:var(--text-main);">Danh sách chặn</h3>
-                    <p style="margin:5px 0 0; font-size:13px; color:var(--text-sub);">Quản lý quyền truy cập Internet của các thiết bị.</p>
+                    <p style="margin:5px 0 0; font-size:15px; color:var(--text-sub);">Quản lý quyền truy cập Internet của các thiết bị.</p>
                 </div>
 
                 <div id="blocked-list" style="display:flex; flex-direction:column; gap:10px;">
@@ -186,8 +186,8 @@ const ClientsModule = {
                     <div style="width:40px; height:40px; background:#fff5f5; border-radius:12px; display:flex; align-items:center; justify-content:center; margin-bottom:10px;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fc8181" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                     </div>
-                    <span style="font-size:13px;">Không thể tải danh sách</span>
-                    <button onclick="ClientsModule.fetchSettings()" style="margin-top:10px; font-size:11px; padding:4px 10px; background:none; border:1px solid var(--border-color); border-radius:4px; cursor:pointer;">Thử lại</button>
+                    <span style="font-size:15px;">Không thể tải danh sách</span>
+                    <button onclick="ClientsModule.fetchSettings()" style="margin-top:10px; font-size:13px; padding:4px 10px; background:none; border:1px solid var(--border-color); border-radius:4px; cursor:pointer;">Thử lại</button>
                 </div>`;
             });
     },
@@ -208,7 +208,7 @@ const ClientsModule = {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
                 </div>
                 <span style="font-weight:600; font-size:14px; color:var(--text-main); margin-bottom:4px;">Danh sách chặn trống</span>
-                <span style="font-size:12px; color:var(--text-sub);">Hiện chưa có thiết bị nào bị chặn truy cập.</span>
+                <span style="font-size:14px; color:var(--text-sub);">Hiện chưa có thiết bị nào bị chặn truy cập.</span>
             </div>`;
             return;
         }
@@ -232,12 +232,12 @@ const ClientsModule = {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
                     </div>
                     <div>
-                        <div style="font-weight:700; font-size:13px; font-family:monospace;">${macUpper}</div>
-                        ${name ? `<div style="font-size:11px; color:var(--text-main); font-weight:600;">${name}</div>` : ''}
-                        <div style="font-size:10px; color:#e53e3e;">Đang bị chặn truy cập</div>
+                        <div style="font-weight:700; font-size:15px; font-family:monospace;">${macUpper}</div>
+                        ${name ? `<div style="font-size:13px; color:var(--text-main); font-weight:600;">${name}</div>` : ''}
+                        <div style="font-size:12px; color:#e53e3e;">Đang bị chặn truy cập</div>
                     </div>
                 </div>
-                <button onclick="ClientsModule.toggleBlock('${mac}', false)" style="padding:5px 10px; background:white; border:1px solid var(--border-color); border-radius:6px; cursor:pointer; font-size:11px; font-weight:600; color:var(--text-sub);">
+                <button onclick="ClientsModule.toggleBlock('${mac}', false)" style="padding:5px 10px; background:white; border:1px solid var(--border-color); border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; color:var(--text-sub);">
                     Bỏ chặn
                 </button>
             </div>
@@ -309,7 +309,7 @@ const ClientsModule = {
 
                 signalIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${sigColor}" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg> <span style="color:${sigColor}; font-weight:600;">${esc(c.signal)}dBm</span>`;
             } else {
-                signalIcon = `<span style="font-size:10px; color:var(--text-sub);">LAN</span>`;
+                signalIcon = `<span style="font-size:12px; color:var(--text-sub);">LAN</span>`;
             }
 
             // c.name = DHCP hostname (attacker-controlled), c.ip from ARP, c.mac validated upstream
@@ -365,25 +365,25 @@ const ClientsModule = {
                          ${this.getDeviceIcon(client.name).replace('width="20"', 'width="32"').replace('height="20"', 'height="32"')}
                     </div>
                     <h3 style="margin:0; font-size:18px;">${esc(client.name)}</h3>
-                    <p style="margin:5px 0 0 0; color:var(--text-sub); font-size:12px; font-family:monospace;">${esc(client.mac.toUpperCase())}</p>
+                    <p style="margin:5px 0 0 0; color:var(--text-sub); font-size:14px; font-family:monospace;">${esc(client.mac.toUpperCase())}</p>
                 </div>
 
                 <div style="background:var(--bg-body); padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid var(--border-color);">
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                         <div>
-                            <span style="font-size:11px; color:var(--text-sub); display:block; margin-bottom:2px;">IP Address</span>
+                            <span style="font-size:13px; color:var(--text-sub); display:block; margin-bottom:2px;">IP Address</span>
                             <span style="font-weight:600; font-family:monospace; color:#3182ce;">${esc(client.ip)}</span>
                         </div>
                         <div>
-                            <span style="font-size:11px; color:var(--text-sub); display:block; margin-bottom:2px;">Kết nối</span>
+                            <span style="font-size:13px; color:var(--text-sub); display:block; margin-bottom:2px;">Kết nối</span>
                             <span style="font-weight:600;">${esc(client.type)}</span>
                         </div>
                         <div>
-                            <span style="font-size:11px; color:var(--text-sub); display:block; margin-bottom:2px;">Tín hiệu</span>
+                            <span style="font-size:13px; color:var(--text-sub); display:block; margin-bottom:2px;">Tín hiệu</span>
                             <span style="font-weight:600; color:${parseInt(client.signal) >= -60 ? '#48bb78' : '#e53e3e'}">${esc(client.signal ?? '--')} dBm</span>
                         </div>
                         <div>
-                            <span style="font-size:11px; color:var(--text-sub); display:block; margin-bottom:2px;">Tổng Data</span>
+                            <span style="font-size:13px; color:var(--text-sub); display:block; margin-bottom:2px;">Tổng Data</span>
                             <span style="font-weight:600;">${VWRT_API.formatBytes(client.total)}</span>
                         </div>
                     </div>
@@ -394,7 +394,7 @@ const ClientsModule = {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
                         Chặn truy cập Internet
                     </button>
-                    <p style="font-size:11px; color:var(--text-sub); text-align:center;">
+                    <p style="font-size:13px; color:var(--text-sub); text-align:center;">
                         Thiết bị này sẽ bị ngắt kết nối WiFi ngay lập tức.
                     </p>
                 </div>

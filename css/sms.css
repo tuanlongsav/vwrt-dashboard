@@ -35,15 +35,15 @@
 }
 
 .sms-dash-sender { 
-    font-weight: 700; font-size: 13px; color: var(--text-main); 
+    font-weight: 700; font-size: 15px; color: var(--text-main); 
 }
 
 .sms-dash-time { 
-    font-size: 11px; color: var(--text-sub); 
+    font-size: 15px; color: var(--text-sub); 
 }
 
 .sms-dash-text { 
-    font-size: 13px; color: var(--text-sub); 
+    font-size: 15px; color: var(--text-sub); 
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
     line-height: 1.4;
 }
@@ -59,11 +59,11 @@
     }
     
     .sms-dash-time {
-        font-size: 10px;
+        font-size: 14px;
     }
     
     .sms-dash-sender {
-        font-size: 12px;
+        font-size: 14px;
     }
     
     /* Ẩn table, hiển thị card list trên mobile */
@@ -99,12 +99,12 @@
 }
 
 .sms-mobile-card-type {
-    font-size: 11px;
+    font-size: 15px;
     font-weight: bold;
 }
 
 .sms-mobile-card-time {
-    font-size: 11px;
+    font-size: 15px;
     color: #718096;
 }
 
@@ -117,7 +117,7 @@
 .sms-mobile-card-content {
     color: #4a5568;
     line-height: 1.5;
-    font-size: 13px;
+    font-size: 15px;
     word-break: break-word;
     /* Collapsed by default (3 lines) */
     display: -webkit-box;

@@ -34,11 +34,11 @@ const SmsModule = {
 
                     <div style="padding: 20px;">
                         <div class="sms-input-group" style="margin-bottom: 15px;">
-                            <label style="display:block; font-size:12px; font-weight:600; color:#555; margin-bottom:5px;">Người nhận:</label>
+                            <label style="display:block; font-size:14px; font-weight:600; color:#555; margin-bottom:5px;">Người nhận:</label>
                             <input type="text" id="sms-to-modal" class="sms-input" placeholder="Nhập số điện thoại..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none;">
                         </div>
                         <div class="sms-input-group">
-                            <label style="display:block; font-size:12px; font-weight:600; color:#555; margin-bottom:5px;">Nội dung:</label>
+                            <label style="display:block; font-size:14px; font-weight:600; color:#555; margin-bottom:5px;">Nội dung:</label>
                             <textarea id="sms-body-modal" class="sms-input" rows="5" placeholder="Nhập nội dung tin nhắn..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; outline:none; resize:none; font-family:inherit;"></textarea>
                         </div>
                     </div>
@@ -172,7 +172,7 @@ const SmsModule = {
         let warningHtml = "";
         if (storage && storage.total - storage.used <= 2) {
             warningHtml = `
-                <div style="background:#fff5f5; color:#c53030; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:700; border:1px solid #feb2b2; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+                <div style="background:#fff5f5; color:#c53030; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:700; border:1px solid #feb2b2; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
                     <span style="font-size:14px;">⚠️</span> Bộ nhớ gần đầy! (Cần xóa bớt)
                 </div>
             `;
@@ -313,13 +313,13 @@ const SmsModule = {
                     else
                         statusIcon = ` <span title="Đã gửi" style="color:#a0aec0;">✔</span>`;
 
-                    typeLabel = `<span style="color:#4a5568; background:#edf2f7; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:bold; border:1px solid #cbd5e0; display:inline-block; width:75px; text-align:center;">↗ Gửi đi${statusIcon}</span>`;
-                    typeLabelMobile = `<span style="color:#4a5568; background:#edf2f7; padding:3px 6px; border-radius:4px; font-size:10px; font-weight:bold;">↗ Gửi đi${statusIcon}</span>`;
+                    typeLabel = `<span style="color:#4a5568; background:#edf2f7; padding:4px 8px; border-radius:4px; font-size:13px; font-weight:bold; border:1px solid #cbd5e0; display:inline-block; width:75px; text-align:center;">↗ Gửi đi${statusIcon}</span>`;
+                    typeLabelMobile = `<span style="color:#4a5568; background:#edf2f7; padding:3px 6px; border-radius:4px; font-size:12px; font-weight:bold;">↗ Gửi đi${statusIcon}</span>`;
                 } else {
                     typeLabel =
-                        '<span style="color:#2b6cb0; background:#bee3f8; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:bold; border:1px solid #90cdf4; display:inline-block; width:75px; text-align:center;">↙ Tin đến</span>';
+                        '<span style="color:#2b6cb0; background:#bee3f8; padding:4px 8px; border-radius:4px; font-size:13px; font-weight:bold; border:1px solid #90cdf4; display:inline-block; width:75px; text-align:center;">↙ Tin đến</span>';
                     typeLabelMobile =
-                        '<span style="color:#2b6cb0; background:#bee3f8; padding:3px 6px; border-radius:4px; font-size:10px; font-weight:bold;">↙ Tin đến</span>';
+                        '<span style="color:#2b6cb0; background:#bee3f8; padding:3px 6px; border-radius:4px; font-size:12px; font-weight:bold;">↙ Tin đến</span>';
                 }
 
                 const timeShow = this.getDisplayTime(msg);
@@ -347,7 +347,7 @@ const SmsModule = {
                                 ${safeText}
                             </div>
                         </td>
-                        <td style="text-align:right; padding-right:15px; color:#718096; font-size:13px; vertical-align: top; padding-top: 15px;">${timeShow}</td>
+                        <td style="text-align:right; padding-right:15px; color:#718096; font-size:15px; vertical-align: top; padding-top: 15px;">${timeShow}</td>
                     </tr>
                 `;
 
@@ -360,7 +360,7 @@ const SmsModule = {
                         <div style="margin-bottom: 10px;">${typeLabelMobile}</div>
                         <div class="sms-mobile-card-content" onclick="this.classList.toggle('expanded')" title="Bấm để mở rộng/thu gọn">${safeText}</div>
                         <div class="sms-mobile-card-checkbox" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #f0f0f0;">
-                            <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#718096; cursor:pointer;">
+                            <label style="display:flex; align-items:center; gap:8px; font-size:14px; color:#718096; cursor:pointer;">
                                 <input type="checkbox" class="sms-chk" value="${safeIndex}" style="width:18px; height:18px;">
                                 Chọn tin này
                             </label>
@@ -385,11 +385,11 @@ const SmsModule = {
                         </div>
                         
                         <div style="flex: 1; min-width: 140px; display:flex; align-items:center; gap:8px; padding:8px 12px; background:white; border-radius:8px; border:1px solid #eee;">
-                            <div style="font-size:10px; font-weight:800; color:#718096; white-space:nowrap;">SIM:</div>
+                            <div style="font-size:12px; font-weight:800; color:#718096; white-space:nowrap;">SIM:</div>
                             <div style="flex:1; height:6px; background:#edf2f7; border-radius:10px; overflow:hidden;">
                                 <div style="width:${percent}%; height:100%; background:${color}; transition:0.3s;"></div>
                             </div>
-                            <div style="font-size:11px; font-weight:800; color:${color}; white-space:nowrap;">${storage.used}/${storage.total}</div>
+                            <div style="font-size:13px; font-weight:800; color:${color}; white-space:nowrap;">${storage.used}/${storage.total}</div>
                         </div>
 
 
@@ -403,7 +403,7 @@ const SmsModule = {
                                 <col style="width: auto;"> <col style="width: 160px;">
                             </colgroup>
                             <thead style="background:#fff; position:sticky; top:0; z-index:10; border-bottom: 2px solid #eee;">
-                                <tr style="color:#718096; font-size:11px; font-weight:bold; height:45px;">
+                                <tr style="color:#718096; font-size:13px; font-weight:bold; height:45px;">
                                     <th style="text-align:center; background:#f8f9fa;"><input type="checkbox" onchange="SmsModule.toggleAll(this)" style="width:16px; height:16px; cursor:pointer;"></th>
                                     <th style="text-align:left; padding-left:15px; background:#f8f9fa;">LOẠI</th>
                                     <th style="text-align:left; padding-left:5px; background:#f8f9fa;">SỐ ĐIỆN THOẠI</th>

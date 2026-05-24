@@ -80,7 +80,7 @@ const LanModule = {
                     border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
                 }
                 .v-form-group small {
-                    display: block; margin-top: 6px; font-size: 12px; color: #718096;
+                    display: block; margin-top: 6px; font-size: 14px; color: #718096;
                 }
 
                 /* Tabs */

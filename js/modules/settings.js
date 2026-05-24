@@ -42,9 +42,9 @@ const SettingsModule = {
                 <!-- 1. SYSTEM STATUS CARD (Mint accent, theme aware) -->
                 <div id="sys-status-card" class="setting-card" style="background:var(--card-status-bg, linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%)); border:1px solid var(--card-status-border, #81e6d9); border-radius:12px; padding:15px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
                     <div>
-                        <div style="font-size:10px; font-weight:700; color:var(--card-status-label, #2c7a7b); text-transform:uppercase; letter-spacing:0.5px;">Hệ thống & Cập nhật</div>
+                        <div style="font-size:12px; font-weight:700; color:var(--card-status-label, #2c7a7b); text-transform:uppercase; letter-spacing:0.5px;">Hệ thống & Cập nhật</div>
                         <div style="font-size:15px; font-weight:800; color:var(--card-status-text, #234e52); margin-top:2px;" id="cur-ver-text">Đang tải...</div>
-                        <div style="font-size:11px; color:var(--card-status-sub, #285e61); margin-top:2px; display:flex; align-items:center; gap:4px;" id="update-status-text">
+                        <div style="font-size:13px; color:var(--card-status-sub, #285e61); margin-top:2px; display:flex; align-items:center; gap:4px;" id="update-status-text">
                             <span style="width:6px; height:6px; background:#38b2ac; border-radius:50%;"></span> Hệ thống ổn định
                         </div>
                     </div>
@@ -60,7 +60,7 @@ const SettingsModule = {
                         <div style="width:36px; height:36px; background:rgba(49, 130, 206, 0.1); border-radius:10px; color:#3182ce; display:flex; align-items:center; justify-content:center;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                         </div>
-                        <span style="font-size:11px; font-weight:600; color:var(--text-sub);">Reset Mạng</span>
+                        <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Reset Mạng</span>
                     </div>
 
                     <!-- Change Pass -->
@@ -68,7 +68,7 @@ const SettingsModule = {
                         <div style="width:36px; height:36px; background:rgba(128, 90, 213, 0.1); border-radius:10px; color:#805ad5; display:flex; align-items:center; justify-content:center;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                         </div>
-                        <span style="font-size:11px; font-weight:600; color:var(--text-sub);">Đổi Mật Khẩu</span>
+                        <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Đổi Mật Khẩu</span>
                     </div>
 
                     <!-- LuCI -->
@@ -76,7 +76,7 @@ const SettingsModule = {
                         <div style="width:36px; height:36px; background:rgba(74, 85, 104, 0.1); border-radius:10px; color:var(--text-sub); display:flex; align-items:center; justify-content:center;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                         </div>
-                        <span style="font-size:11px; font-weight:600; color:var(--text-sub);">Cài đặt nâng cao</span>
+                        <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Cài đặt nâng cao</span>
                     </a>
 
                     <!-- Reboot -->
@@ -84,14 +84,14 @@ const SettingsModule = {
                         <div style="width:36px; height:36px; background:rgba(237, 137, 54, 0.1); border-radius:10px; color:#ed8936; display:flex; align-items:center; justify-content:center;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
                         </div>
-                        <span style="font-size:11px; font-weight:600; color:var(--text-sub);">Restart</span>
+                        <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Restart</span>
                     </div>
                 </div>
 
                 <!-- 3. DANGER ZONE -->
                 <div onclick="SettingsModule.confirmReset()" style="margin-top:5px; background:rgba(229, 62, 62, 0.05); border:1px dashed var(--danger, #fc8181); border-radius:12px; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    <span style="font-size:11px; font-weight:700; color:#e53e3e;">Khôi phục cài đặt gốc</span>
+                    <span style="font-size:13px; font-weight:700; color:#e53e3e;">Khôi phục cài đặt gốc</span>
                 </div>
 
                 <style>
@@ -137,14 +137,14 @@ const SettingsModule = {
 
         const rem = this.updateData.latest;
         const cur = this.updateData.current;
-        let htmlContent = `<div style="text-align:left; font-size:13px; color:var(--text-main);">`;
+        let htmlContent = `<div style="text-align:left; font-size:15px; color:var(--text-main);">`;
 
         if (this.updateData.has_update) {
             htmlContent += `
                 <div style="background:var(--success-bg, rgba(72, 187, 120, 0.1)); padding:10px; border-radius:8px; border:1px solid var(--success-border, #48bb78); margin-bottom:10px;">
                     <div style="font-weight:bold; color:var(--success-text, #276749);">Dashboard Mới: ${rem.dashboard.version}</div>
                     <div style="color:var(--text-sub); margin-bottom:5px;">Hiện tại: ${cur.dashboard.version}</div>
-                    <pre style="background:var(--bg-body); color:var(--text-main); padding:8px; font-size:11px; white-space:pre-wrap; border-radius:6px; border:1px solid var(--border-color);">${rem.dashboard.log}</pre>
+                    <pre style="background:var(--bg-body); color:var(--text-main); padding:8px; font-size:13px; white-space:pre-wrap; border-radius:6px; border:1px solid var(--border-color);">${rem.dashboard.log}</pre>
                     <button onclick="SettingsModule.doUpdate('dashboard', '${rem.dashboard.url}', '${rem.dashboard.version}')" class="btn-modal btn-primary" style="width:100%; margin-top:10px;">Cập nhật Giao diện</button>
                 </div>
             `;
@@ -155,7 +155,7 @@ const SettingsModule = {
                 <div style="background:var(--danger-bg, rgba(229, 62, 62, 0.1)); padding:10px; border-radius:8px; border:1px solid var(--danger-border, #feb2b2);">
                     <div style="font-weight:bold; color:var(--danger-text, #c53030);">Firmware Mới: ${rem.firmware.version}</div>
                     <div style="color:var(--text-sub); margin-bottom:5px;">Hiện tại: ${cur.firmware.version}</div>
-                    <pre style="background:var(--bg-body); color:var(--text-main); padding:8px; font-size:11px; white-space:pre-wrap; border-radius:6px; border:1px solid var(--border-color);">${rem.firmware.log}</pre>
+                    <pre style="background:var(--bg-body); color:var(--text-main); padding:8px; font-size:13px; white-space:pre-wrap; border-radius:6px; border:1px solid var(--border-color);">${rem.firmware.log}</pre>
                     <button onclick="SettingsModule.doUpdate('firmware', '${rem.firmware.url}', '${rem.firmware.version}')" class="btn-modal btn-primary" style="width:100%; margin-top:10px; background:#e53e3e;">Cập nhật Firmware</button>
                 </div>
             `;
@@ -187,7 +187,7 @@ const SettingsModule = {
         if(typeof Modal !== 'undefined') {
             Modal.confirm(
                 "Xác nhận Cập nhật", 
-                `Bạn có chắc chắn muốn cập nhật <b>${type.toUpperCase()}</b> lên phiên bản <b>${ver}</b>?<br><br><span style="color:red; font-size:12px;">⚠ Lưu ý: Không tắt nguồn thiết bị trong quá trình cập nhật.</span>`, 
+                `Bạn có chắc chắn muốn cập nhật <b>${type.toUpperCase()}</b> lên phiên bản <b>${ver}</b>?<br><br><span style="color:red; font-size:14px;">⚠ Lưu ý: Không tắt nguồn thiết bị trong quá trình cập nhật.</span>`, 
                 () => {
                     this.executeUpdateFetch(type, url, ver);
                 }
@@ -294,7 +294,7 @@ const SettingsModule = {
                 <div class="modal-box" style="max-width:350px; background:var(--bg-card); color:var(--text-main);">
                     <h3 style="color:var(--text-main);">Đổi mật khẩu Admin</h3>
                     <div style="text-align:left; margin:15px 0;">
-                        <label style="font-size:12px; font-weight:bold; color:var(--text-sub);">Mật khẩu mới:</label>
+                        <label style="font-size:14px; font-weight:bold; color:var(--text-sub);">Mật khẩu mới:</label>
                         <input type="password" id="new-pass" placeholder="Nhập pass mới..." style="width:100%; padding:10px; margin-top:5px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-body); color:var(--text-main); outline:none;">
                     </div>
                     <div class="modal-actions">

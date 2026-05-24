@@ -80,8 +80,8 @@ const NetworkModule = {
 
             let v6Display = `<span class="ip-val ip-v6">${net.ipv6}</span>`;
 
-            if (net.ipv4 === '--') v4Display = `<span style="color: #dd6b20; font-size: 12px;">Đang chờ IP...</span>`;
-            if (net.ipv6 === '--') v6Display = `<span style="color: #a0aec0; font-size: 11px;">Chưa có IPv6</span>`;
+            if (net.ipv4 === '--') v4Display = `<span style="color: #dd6b20; font-size: 14px;">Đang chờ IP...</span>`;
+            if (net.ipv6 === '--') v6Display = `<span style="color: #a0aec0; font-size: 13px;">Chưa có IPv6</span>`;
 
             html += `
             <div class="net-item">

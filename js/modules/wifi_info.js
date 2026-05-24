@@ -105,12 +105,12 @@ const WifiModule = {
             let tagHtml = '';
             let metaInfoHtml = ''; 
             if (group.items.length > 1) {
-                tagHtml = `<span class="net-tag" style="background:linear-gradient(90deg, #805ad5, #b794f4); color:white; font-size: 9px;">2.4G + 5G</span>`;
+                tagHtml = `<span class="net-tag" style="background:linear-gradient(90deg, #805ad5, #b794f4); color:white; font-size: 11px;">2.4G + 5G</span>`;
                 const w24 = group.items.find(i => i.band === '2.4GHz');
                 const w5 = group.items.find(i => i.band === '5GHz');
                 
                 metaInfoHtml = `
-                    <div style="font-size: 10px; color: var(--text-sub); margin-bottom: 8px; display:flex; flex-direction:column; gap:2px;">
+                    <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px; display:flex; flex-direction:column; gap:2px;">
                         ${w5 ? `<span style="display:flex; align-items:center; gap:4px;"><span style="width:6px; height:6px; background:#3182ce; border-radius:50%;"></span> 5G: Ch ${w5.channel} (${fmtWidth(w5.conf_htmode)})</span>` : ''}
                         ${w24 ? `<span style="display:flex; align-items:center; gap:4px;"><span style="width:6px; height:6px; background:#38a169; border-radius:50%;"></span> 2.4G: Ch ${w24.channel} (${fmtWidth(w24.conf_htmode)})</span>` : ''}
                     </div>
@@ -118,10 +118,10 @@ const WifiModule = {
             } else {
                 const item = group.items[0];
                 const colorClass = item.band === '5GHz' ? 'tag-blue' : 'tag-green';
-                tagHtml = `<span class="net-tag ${colorClass}" style="font-size: 9px;">${item.band}</span>`;
+                tagHtml = `<span class="net-tag ${colorClass}" style="font-size: 11px;">${item.band}</span>`;
                 
                 metaInfoHtml = `
-                    <div style="font-size: 10px; color: var(--text-sub); margin-bottom: 8px; display:flex; align-items:center; gap:5px;">
+                    <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px; display:flex; align-items:center; gap:5px;">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                         Channel ${item.channel} • ${fmtWidth(item.conf_htmode)}
                     </div>
@@ -137,7 +137,7 @@ const WifiModule = {
             html += `
                 <div class="wifi-item">
                     <div class="wifi-info-row" style="margin-bottom: 2px;">
-                        <span style="display:flex; align-items:center; gap:6px; font-size: 13px;">
+                        <span style="display:flex; align-items:center; gap:6px; font-size: 15px;">
                             ${safeSSID} ${tagHtml}
                         </span>
                         
@@ -150,16 +150,16 @@ const WifiModule = {
                     
                     <div class="wifi-pass-container">
                         <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:5px;">
-                            <label style="margin:0; font-size: 11px;">Mật khẩu:</label>
+                            <label style="margin:0; font-size: 13px;">Mật khẩu:</label>
                             
-                            <div style="font-size:10px; color:${clientColor}; display:flex; align-items:center; gap:3px;">
+                            <div style="font-size:12px; color:${clientColor}; display:flex; align-items:center; gap:3px;">
                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                                 <strong>${group.totalClients}</strong>
                             </div>
                         </div>
 
                         <div class="pass-input-group">
-                            <input type="password" value="${safeKey}" id="${passId}" readonly style="font-size: 12px;">
+                            <input type="password" value="${safeKey}" id="${passId}" readonly style="font-size: 14px;">
                             <button class="btn-icon-small" onclick="togglePass('${passId}')">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             </button>
@@ -221,19 +221,19 @@ openEditModal: function(dataStr) {
                     
                     <div style="display:grid; gap:15px;">
                         <div>
-                            <label style="font-size:12px; color:#718096; display:block; margin-bottom:5px;">Tên Wifi (SSID)</label>
+                            <label style="font-size:14px; color:#718096; display:block; margin-bottom:5px;">Tên Wifi (SSID)</label>
                             <input type="text" id="edit-ssid" value="${safeSSID}" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
                         </div>
 
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                             <div>
-                                <label style="font-size:12px; color:#718096; display:block; margin-bottom:5px;">Kênh (Channel)</label>
+                                <label style="font-size:14px; color:#718096; display:block; margin-bottom:5px;">Kênh (Channel)</label>
                                 <select id="edit-channel" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; background:var(--bg-card); color:var(--text-main);">
                                     ${channelOptions}
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size:12px; color:#718096; display:block; margin-bottom:5px;">Chế độ (Mode)</label>
+                                <label style="font-size:14px; color:#718096; display:block; margin-bottom:5px;">Chế độ (Mode)</label>
                                 <select id="edit-htmode" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; background:var(--bg-card); color:var(--text-main);">
                                     ${modeOptions}
                                 </select>
@@ -241,12 +241,12 @@ openEditModal: function(dataStr) {
                         </div>
                         
                         <div>
-                            <label style="font-size:12px; color:#718096; display:block; margin-bottom:5px;">Mật khẩu (WPA2-PSK)</label>
+                            <label style="font-size:14px; color:#718096; display:block; margin-bottom:5px;">Mật khẩu (WPA2-PSK)</label>
                             <input type="text" id="edit-key" value="${safeKey}" 
                                 placeholder="Để trống = Không mật khẩu" 
                                 oninput="WifiModule.validateKey()"
                                 style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px;">
-                            <div id="key-msg" style="font-size:12px; color:#e53e3e; margin-top:5px; min-height:18px;"></div>
+                            <div id="key-msg" style="font-size:14px; color:#e53e3e; margin-top:5px; min-height:18px;"></div>
                         </div>
                     </div>
 

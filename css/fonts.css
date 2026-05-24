@@ -1,0 +1,69 @@
+/* ============================================================================
+ * VWRT — Web Font Definitions
+ * ============================================================================
+ * Self-hosted Noto Sans Display (OFL license). Loaded BEFORE any other CSS
+ * so font-family declarations elsewhere can reference it. TTF served from
+ * /www/vwrt/fonts/ — uhttpd serves *.ttf as application/octet-stream by
+ * default, which the browser accepts for @font-face.
+ * ========================================================================== */
+
+@font-face {
+    font-family: 'Noto Sans Display';
+    src: url('/fonts/NotoSansDisplay-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Noto Sans Display';
+    src: url('/fonts/NotoSansDisplay-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Noto Sans Display';
+    src: url('/fonts/NotoSansDisplay-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Noto Sans Display';
+    src: url('/fonts/NotoSansDisplay-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ============================================================================
+ * Base font + readability bump
+ * Applied to <html> so all rem-based sizes scale together.
+ * Previous base was browser default (16px). We bump to 17px and push the
+ * font stack to use Noto Sans Display first.
+ * ========================================================================== */
+html {
+    font-size: 17px; /* was 16px; +6.25% across the board */
+}
+
+body, button, input, select, textarea {
+    font-family: 'Noto Sans Display',
+                 -apple-system, BlinkMacSystemFont,
+                 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Make small UI labels (kicker/badge text) easier to read on tablets */
+.card-header span,
+.section-label,
+.tag,
+.badge,
+[class*="label"] {
+    letter-spacing: 0.02em;
+}
