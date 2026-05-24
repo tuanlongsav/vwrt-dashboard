@@ -1141,11 +1141,34 @@ function main()
                 else
                     data_modem.ping = "-"
                 end
-                
+
                 -- 5. Data Usage (Using dynamic iface)
                 local net_stats = get_net_stats(data_modem.iface)
                 data_modem.rx = net_stats.rx
                 data_modem.tx = net_stats.tx
+
+                -- 6. Public IP (egress IP as seen by the internet).
+                --   data_modem.wan_ip is what the carrier assigned (often CGNAT/RFC1918).
+                --   data_modem.public_ip is what external services see.
+                --   Refresh at most once every 5 minutes to avoid hammering ipify
+                --   and to limit cellular traffic on metered plans.
+                _G.PUBLIC_IP_LAST = _G.PUBLIC_IP_LAST or 0
+                _G.PUBLIC_IP_VAL  = _G.PUBLIC_IP_VAL  or "-"
+                local now = os.time()
+                if now - _G.PUBLIC_IP_LAST > 300 and data_modem.wan_ip and data_modem.wan_ip ~= "Unknown" and data_modem.wan_ip ~= "-" then
+                    -- 3s timeout so we never block the main poll for long
+                    local ip_cmd = "curl -s --max-time 3 --interface " .. data_modem.iface .. " https://api.ipify.org 2>/dev/null"
+                    local h = io.popen(ip_cmd)
+                    if h then
+                        local out = h:read("*a"); h:close()
+                        out = (out or ""):gsub("[\r\n]+", ""):gsub("^%s+", ""):gsub("%s+$", "")
+                        if out:match("^%d+%.%d+%.%d+%.%d+$") then
+                            _G.PUBLIC_IP_VAL = out
+                            _G.PUBLIC_IP_LAST = now
+                        end
+                    end
+                end
+                data_modem.public_ip = _G.PUBLIC_IP_VAL
 
                 local json_str = cjson.encode(data_modem)
                 write_file(TEMP_FILE, json_str)

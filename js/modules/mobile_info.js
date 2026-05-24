@@ -397,6 +397,10 @@ const MobileModule = {
                                     <span class="modem-val val-ip">${d.wan_ip || '--'}</span>
                                 </div>
                                 <div class="modem-row">
+                                    <span class="modem-label">Public IP:</span>
+                                    <span class="modem-val val-ip" style="color:#805ad5;">${d.public_ip && d.public_ip !== '-' ? d.public_ip : '<span style=\"color:#a0aec0; font-size:13px;\">đang dò...</span>'}</span>
+                                </div>
+                                <div class="modem-row">
                                     <span class="modem-label">IMEI:</span>
                                     <span class="modem-val val-imei">${d.imei || '--'}</span>
                                 </div>

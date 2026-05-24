@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.5",
+        "version": "1.0.6",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "UI: Đưa tiện ích từ sidebar ra Dashboard + dọn sidebar.\n- Dashboard có thêm 4 card mới (auto-refresh 10s):\n  • Trạng thái mạng (danh sách interface với IP + state)\n  • MultiWAN (members + status online/offline)\n  • Chặn quảng cáo: 2 nút song song — AdBlock Fast (UCI) và AdGuard Home (DNS-level, mở :3000)\n  • Tailscale VPN (IP + hostname + state)\n- Settings popup giờ chứa: Đèn LED, Lịch Reboot, Terminal (trước ở sidebar).\n- Sidebar slim: chỉ giữ TỔNG QUAN (Dashboard + Trạng thái mạng).\n- Click vào card vẫn mở modal chi tiết của module hiện có."
+        "log": "Gỡ sidebar + mở rộng card Trạng thái mạng + thêm Public IP.\n- Sidebar trái xóa hoàn toàn (HTML aside, overlay, sidebar.js script).\n- Card Trạng thái mạng giờ hiển thị TẤT CẢ interface (không chỉ top 5) với IPv4/IPv6/MAC/RX/TX/proto/state, scroll khi quá 360px.\n- Modem detail popup thêm trường 'Public IP' (IP egress nhìn từ internet, khác wan_ip nếu CGNAT).\n- Poller mới hỏi api.ipify.org qua interface modem mỗi 5 phút (timeout 3s, không hammering)."
     }
 }

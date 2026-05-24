@@ -73,17 +73,41 @@ const UtilCards = {
                     ? (v) => Security.escapeHtml(String(v ?? ''))
                     : (v) => String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 
-                listEl.innerHTML = list.slice(0, 5).map(n => {
-                    const ip = n.ipv4 !== '--' ? n.ipv4 : (n.ipv6 !== '--' ? n.ipv6 : '');
-                    const stateColor = n.state === 'up' ? '#48bb78' : (n.state === 'pending' ? '#ed8936' : '#a0aec0');
+                // Bytes pretty-printer (1.2 GB / 350 MB)
+                const fmt = (b) => {
+                    b = Number(b) || 0;
+                    if (b < 1024) return b + ' B';
+                    const units = ['KB','MB','GB','TB'];
+                    let i = -1, n = b;
+                    do { n /= 1024; i++; } while (n >= 1024 && i < units.length - 1);
+                    return n.toFixed(n >= 100 ? 0 : 1) + ' ' + units[i];
+                };
+
+                // Show all interfaces (not just top 5) — sidebar removed, so we
+                // have room. Lightweight row per interface with full details.
+                listEl.innerHTML = list.map(n => {
+                    const stateColor = n.state === 'up' ? '#48bb78'
+                                     : n.state === 'pending' ? '#ed8936'
+                                     : '#a0aec0';
+                    const v4 = (n.ipv4 && n.ipv4 !== '--') ? n.ipv4 : '';
+                    const v6 = (n.ipv6 && n.ipv6 !== '--') ? n.ipv6 : '';
                     return `
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 5px; border-bottom:1px solid var(--border-color, #edf2f7); font-size:14px;">
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="width:8px; height:8px; background:${stateColor}; border-radius:50%;"></span>
-                                <span style="font-weight:600;">${esc(n.label)}</span>
-                                <span style="color:var(--text-sub); font-size:13px;">${esc(n.name)}</span>
+                        <div style="padding:10px 6px; border-bottom:1px solid var(--border-color, #edf2f7); font-size:14px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="width:8px; height:8px; background:${stateColor}; border-radius:50%; box-shadow:0 0 4px ${stateColor};"></span>
+                                    <span style="font-weight:700;">${esc(n.label)}</span>
+                                    <span style="color:var(--text-sub); font-size:13px; font-family:monospace;">${esc(n.name)}</span>
+                                </div>
+                                <span style="background:rgba(49,130,206,0.1); color:#3182ce; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600;">${esc((n.proto || '').toUpperCase())}</span>
                             </div>
-                            <span style="font-family:monospace; color:#3182ce; font-size:13px;">${esc(ip)}</span>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:6px 14px; font-size:13px; color:var(--text-sub); padding-left:16px;">
+                                ${v4 ? `<span>IPv4: <span style="font-family:monospace; color:#3182ce;">${esc(v4)}</span></span>` : ''}
+                                ${v6 ? `<span>IPv6: <span style="font-family:monospace; color:#805ad5;">${esc(v6)}</span></span>` : ''}
+                                <span>MAC: <span style="font-family:monospace;">${esc(n.mac || '--')}</span></span>
+                                <span>↓ <span style="color:#38a169; font-weight:600;">${fmt(n.rx)}</span></span>
+                                <span>↑ <span style="color:#3182ce; font-weight:600;">${fmt(n.tx)}</span></span>
+                            </div>
                         </div>
                     `;
                 }).join('');

@@ -11,84 +11,6 @@
         <link rel="stylesheet" href="css/sms.css" />
     </head>
     <body>
-        <div class="overlay" id="overlay"></div>
-
-        <!-- SIDEBAR NAVIGATION -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo-area">
-                    <div class="logo-icon">V</div>
-                    <span class="logo-text">VWRT Panel</span>
-                </div>
-                <button id="close-sidebar" class="icon-btn-ghost">
-                    &times;
-                </button>
-            </div>
-
-            <nav class="sidebar-nav">
-                <!-- Group 1: TỔNG QUAN -->
-                <div class="nav-group">
-                    <div class="nav-label">TỔNG QUAN</div>
-                    <a
-                        href="#"
-                        class="nav-link active"
-                        onclick="SidebarModule.showFeature('dashboard')"
-                    >
-                        <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
-                        </svg>
-                        Dashboard
-                    </a>
-                    <a
-                        href="#"
-                        class="nav-link"
-                        onclick="SidebarModule.showFeature('network_status')"
-                    >
-                        <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
-                            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
-                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                            <line x1="12" y1="20" x2="12.01" y2="20"></line>
-                        </svg>
-                        Trạng thái mạng
-                    </a>
-                </div>
-
-                <!-- TIỆN ÍCH (mwan3, adblock, tailscale) đã chuyển ra Dashboard. -->
-                <!-- HỆ THỐNG (LED, Lịch Reboot, Terminal) đã chuyển vào Settings. -->
-                <!-- Sidebar giờ chỉ giữ TỔNG QUAN. -->
-            </nav>
-
-            <div class="sidebar-footer">
-                <span style="font-size: 14px; color: #718096">
-                    VWRT fork by
-                    <a
-                        href="https://github.com/tuanlongsav/vwrt-dashboard"
-                        target="_blank"
-                        style="color: #718096; text-decoration: none"
-                        >longht</a
-                    >
-                </span>
-            </div>
-        </aside>
-
         <div class="wrapper">
             <main class="content">
                 <div class="main-container">
@@ -635,8 +557,8 @@
                              ========================================================= -->
                         <div class="cards-track">
 
-                            <!-- TRẠNG THÁI MẠNG -->
-                            <div class="card" onclick="UtilCards.openNetwork()" style="cursor:pointer;">
+                            <!-- TRẠNG THÁI MẠNG — full details inline, no modal needed -->
+                            <div class="card">
                                 <div class="card-header-compact">
                                     <div class="card-icon-small" style="background:rgba(49, 130, 206, 0.1); color:#3182ce;">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
@@ -647,7 +569,7 @@
                                     </div>
                                     <div style="margin-left:auto;"><span class="net-tag tag-blue" id="util-net-count">--</span></div>
                                 </div>
-                                <div class="sys-details-compact" id="util-net-list" style="min-height: 80px;">
+                                <div class="sys-details-compact" id="util-net-list" style="min-height: 80px; max-height: 360px; overflow-y: auto;">
                                     <div style="text-align:center; color:#999; padding:20px; font-size:14px;">Đang tải...</div>
                                 </div>
                             </div>
@@ -740,7 +662,6 @@
         <script src="js/modules/lan.js?v=12"></script>
         <script src="js/modules/util_cards.js?v=1"></script>
 
-        <script src="js/modules/sidebar.js?v=5"></script>
         <script src="js/dashboard.js?v=2"></script>
         <div
             class="footer-info"
