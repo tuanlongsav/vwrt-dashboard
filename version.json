@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.8",
+        "version": "1.0.9",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "AGH: thêm Basic Auth flow inline trên card.\n- Endpoint mới /cgi-bin/adguard/setauth (POST user/pass + CSRF) — test credentials với AGH /control/status, nếu OK lưu vào UCI vwrt.adguard.{user,pass}.\n- Endpoint /cgi-bin/adguard/info giờ tự load creds từ UCI, retry với Basic Auth nếu lần fetch đầu trả 401.\n- Card AGH khi auth_required: render form inline (user/pass + Lưu) thay cho stats grid.\n- Sau khi save thành công → tự refresh, hiển thị stats đầy đủ.\n- Credentials lưu plaintext trong /etc/config/vwrt (root-only readable) — cùng threat model như mọi UCI config khác."
+        "log": "Fix AGH endpoint 'Lỗi kết nối' + cải thiện debugging.\n- update_run dùng `find -exec chmod +x` recursive thay vì glob 2 cấp — file mới trong cgi-bin/adguard/ giờ tự chmod đúng sau OTA.\n- util_cards.js: thay 'Lỗi kết nối endpoint' bằng message cụ thể (HTTP 404 / HTTP 500 / Endpoint trả non-JSON: ...) — dễ chẩn đoán hơn.\n- Console.error stack trace cho debugging mà không cần SSH."
     }
 }

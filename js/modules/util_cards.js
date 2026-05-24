@@ -173,7 +173,22 @@ const UtilCards = {
     // ---------- AdGuard Home stats card (Row 4, full-width) ----------
     refreshAdguard: function () {
         fetch('/cgi-bin/adguard/info')
-            .then(r => r.json())
+            .then(r => {
+                // Surface HTTP errors as a thrown message so .catch can show
+                // a specific reason ("HTTP 404" / "HTTP 500") instead of
+                // the generic "Lỗi kết nối endpoint".
+                if (!r.ok) {
+                    return r.text().then(t => {
+                        throw new Error('HTTP ' + r.status + (t ? ' — ' + t.substring(0, 80) : ''));
+                    });
+                }
+                return r.text().then(t => {
+                    try { return JSON.parse(t); }
+                    catch (e) {
+                        throw new Error('Endpoint trả non-JSON: ' + (t ? t.substring(0, 80) : '(rỗng)'));
+                    }
+                });
+            })
             .then(data => {
                 const statusEl  = document.getElementById('util-agh-status');
                 const summaryEl = document.getElementById('util-agh-summary');
@@ -272,11 +287,13 @@ const UtilCards = {
                 if (topQEl) topQEl.innerHTML = renderTopList(stats.top_queried_domains, '#3182ce');
                 if (topBEl) topBEl.innerHTML = renderTopList(stats.top_blocked_domains, '#e53e3e');
             })
-            .catch(() => {
+            .catch((err) => {
                 const statusEl = document.getElementById('util-agh-status');
                 const sumEl    = document.getElementById('util-agh-summary');
                 if (statusEl) { statusEl.innerText = 'LỖI'; statusEl.style.background = '#fed7d7'; statusEl.style.color = '#822727'; }
-                if (sumEl) sumEl.innerText = 'Lỗi kết nối endpoint';
+                if (sumEl) sumEl.innerText = (err && err.message) ? err.message : 'Lỗi kết nối /cgi-bin/adguard/info';
+                // Also dump to console for SSH-less debugging
+                console.error('[AGH] refresh error:', err);
             });
     },
 

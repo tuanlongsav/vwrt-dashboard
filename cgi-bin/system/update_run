@@ -139,7 +139,10 @@ local function run_update()
         
         -- Fix permissions
         f:write("chmod -R 755 /www/vwrt\n")
-        f:write("chmod +x /www/vwrt/cgi-bin/* /www/vwrt/cgi-bin/*/* 2>/dev/null\n")
+        -- Recursive chmod so CGI scripts in newly-added sub-directories
+        -- (e.g. /www/vwrt/cgi-bin/adguard/*) become executable. The earlier
+        -- two-level glob missed depths greater than 2.
+        f:write("find /www/vwrt/cgi-bin -type f -exec chmod +x {} \\;\n")
         f:write("chmod +x /www/vwrt/services/*\n")
         
         -- Recreate Symlinks for LuCI (Absolute)
