@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.7",
+        "version": "1.0.8",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "AdGuard Home dashboard card + Robust modem detection.\n\nDashboard:\n- Xóa card Trạng thái mạng.\n- Row 3: MultiWAN + Tailscale (Tailscale lên ngang hàng).\n- Row 4: AdGuard Home full-width với stats inline (số truy vấn, đã chặn, tỉ lệ %, thời gian xử lý TB) + Top 5 tên miền truy vấn / bị chặn.\n- Bỏ nút AdBlock Fast — chỉ còn AdGuard Home.\n- Badge BẬT/TẮT/CẦN AUTH/CHƯA CÀI theo state thực của AGH.\n- Nút \"Mở AdGuard ↗\" dùng port phát hiện được từ AGH config.\n\nBackend:\n- /cgi-bin/adguard/info: proxy /control/stats + /control/status từ 127.0.0.1, detect port từ AdGuardHome.yaml.\n\nModem detection:\n- Thêm USB PIDs 2cb7:0a08/09/0a/0b cho FM350-GL ở các USB mode khác nhau (RNDIS/QMI/qmodewm).\n- Fallback theo vendor-only: nếu PID lạ nhưng VID match (Quectel/Fibocom/Sierra/Dell/Telit/SimCom/Huawei/ZTE/Foxconn/Intel), trả về vendor + at_port hint, AT+CGMM sẽ tự fill model."
+        "log": "AGH: thêm Basic Auth flow inline trên card.\n- Endpoint mới /cgi-bin/adguard/setauth (POST user/pass + CSRF) — test credentials với AGH /control/status, nếu OK lưu vào UCI vwrt.adguard.{user,pass}.\n- Endpoint /cgi-bin/adguard/info giờ tự load creds từ UCI, retry với Basic Auth nếu lần fetch đầu trả 401.\n- Card AGH khi auth_required: render form inline (user/pass + Lưu) thay cho stats grid.\n- Sau khi save thành công → tự refresh, hiển thị stats đầy đủ.\n- Credentials lưu plaintext trong /etc/config/vwrt (root-only readable) — cùng threat model như mọi UCI config khác."
     }
 }

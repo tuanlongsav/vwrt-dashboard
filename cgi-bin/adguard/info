@@ -97,18 +97,42 @@ for _, cp in ipairs(config_paths) do
 end
 
 -- ----------------------------------------------------------------------
--- 4. Fetch stats + status from local AGH HTTP API (no auth attempt first)
+-- 4. Fetch stats + status from local AGH HTTP API.
+--    Uses saved Basic Auth credentials from UCI (vwrt.adguard.{user,pass})
+--    if present; otherwise tries without auth (works if AGH allows
+--    localhost without auth, or users list is empty).
 -- ----------------------------------------------------------------------
+local agh_user = exec("uci -q get vwrt.adguard.user"):gsub("%s+$", "")
+local agh_pass = exec("uci -q get vwrt.adguard.pass"):gsub("%s+$", "")
+local have_creds = (agh_user ~= "" and agh_pass ~= "")
+
 local base = "http://127.0.0.1:" .. port  -- always probe via loopback
+
+-- Shell-escape value for inclusion inside single-quoted arg: ' → '\''
+local function shq(s) return (s or ""):gsub("'", "'\\''") end
+
 local function fetch_json(path)
+    -- Try without auth first (most installs whitelist 127.0.0.1)
     local cmd = string.format(
         "curl -s --max-time 3 -o /tmp/agh_resp.json -w '%%{http_code}' %s%s",
         base, path
     )
-    local code = exec(cmd):gsub("%s", "")
+    local code = tonumber(exec(cmd):gsub("%s", "")) or 0
     local body = read_file("/tmp/agh_resp.json") or ""
+
+    -- If 401/403 and we have saved creds, retry with Basic Auth
+    if (code == 401 or code == 403) and have_creds then
+        os.remove("/tmp/agh_resp.json")
+        cmd = string.format(
+            "curl -s --max-time 3 --user '%s:%s' -o /tmp/agh_resp.json -w '%%{http_code}' %s%s",
+            shq(agh_user), shq(agh_pass), base, path
+        )
+        code = tonumber(exec(cmd):gsub("%s", "")) or 0
+        body = read_file("/tmp/agh_resp.json") or ""
+    end
+
     os.remove("/tmp/agh_resp.json")
-    return tonumber(code) or 0, body
+    return code, body
 end
 
 local stats, status_json, auth_required = nil, nil, false

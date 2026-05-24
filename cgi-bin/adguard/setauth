@@ -1,0 +1,125 @@
+#!/usr/bin/lua
+--
+-- /cgi-bin/adguard/setauth — save AdGuard Home Basic Auth credentials
+--
+-- POST { csrf_token, username, password }
+--
+-- Flow:
+--   1. CSRF check
+--   2. Re-detect AGH port (same logic as info endpoint)
+--   3. Test creds by hitting /control/status with Basic Auth
+--   4. If 200 → save to UCI vwrt.adguard.{user,pass}, commit, return success
+--   5. If 401/403 → return "Sai user/pass"
+--   6. If timeout → return network error
+--
+-- Credentials are stored in /etc/config/vwrt, which is root-readable only.
+-- AGH itself stores password as bcrypt hash; we keep plaintext here because
+-- AGH's API requires the plaintext password for Basic Auth. Same threat
+-- model as the rest of the router's UCI config (root sees everything).
+--
+
+-- Dynamic Path Resolution (so we can require lib.csrf)
+local source = debug.getinfo(1).source
+local script_path = source:match("@?(.*[\\/])")
+if script_path then
+    local cgi_root = script_path:match("(.*cgi%-bin/)")
+    if cgi_root then package.path = cgi_root .. "?.lua;" .. package.path end
+end
+if not package.path:find("/www/vwrt/cgi-bin") then
+    package.path = "/www/vwrt/cgi-bin/?.lua;" .. package.path
+end
+
+local cjson = require "cjson"
+local csrf  = require "lib.csrf"
+
+local function send(t)
+    print("Content-type: application/json\n\n")
+    print(cjson.encode(t))
+    os.exit()
+end
+
+local function read_file(path)
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local c = f:read("*a"); f:close(); return c
+end
+
+local function exec(cmd)
+    local h = io.popen(cmd .. " 2>/dev/null")
+    if not h then return "" end
+    local s = h:read("*a") or ""
+    h:close()
+    return s
+end
+
+-- 1. Read POST body
+local len = tonumber(os.getenv("CONTENT_LENGTH") or 0)
+local raw = (len > 0) and io.read(len) or "{}"
+local ok, input = pcall(cjson.decode, raw)
+if not ok or not input then send({ status = "error", message = "Invalid JSON" }) end
+
+-- 2. CSRF check
+local token = csrf.get_token_from_request() or csrf.get_token_from_body(input)
+if not csrf.validate_token(token) then
+    send({ status = "error", message = "CSRF Token không hợp lệ!" })
+end
+
+-- 3. Validate fields
+local user = input.username or ""
+local pass = input.password or ""
+if user == "" or pass == "" then
+    send({ status = "error", message = "Thiếu user / pass" })
+end
+
+-- 4. Detect AGH port (mirror info endpoint)
+local config_paths = {
+    "/etc/AdGuardHome/AdGuardHome.yaml",
+    "/etc/AdGuardHome.yaml",
+    "/opt/etc/AdGuardHome.yaml",
+    "/opt/AdGuardHome/AdGuardHome.yaml",
+    "/var/AdGuardHome/AdGuardHome.yaml",
+}
+local port = 3000
+for _, cp in ipairs(config_paths) do
+    local content = read_file(cp)
+    if content then
+        local p = content:match("bind_port:%s*(%d+)") or content:match("port:%s*(%d+)")
+        if p then port = tonumber(p) end
+        local addr = content:match("address:%s*([%d%.]+:%d+)")
+        if addr then
+            local _, prt = addr:match("([%d%.]+):(%d+)")
+            if prt then port = tonumber(prt) end
+        end
+        break
+    end
+end
+
+-- 5. Test creds against /control/status
+local function shq(s) return (s or ""):gsub("'", "'\\''") end
+local base = "http://127.0.0.1:" .. port
+local cmd = string.format(
+    "curl -s --max-time 3 --user '%s:%s' -o /tmp/agh_auth_test.json -w '%%{http_code}' %s/control/status",
+    shq(user), shq(pass), base
+)
+local code = tonumber(exec(cmd):gsub("%s", "")) or 0
+os.remove("/tmp/agh_auth_test.json")
+
+if code == 401 or code == 403 then
+    send({ status = "error", message = "Sai tài khoản hoặc mật khẩu" })
+end
+if code == 0 then
+    send({ status = "error", message = "Không kết nối được AdGuard Home (port " .. port .. ")" })
+end
+if code < 200 or code >= 300 then
+    send({ status = "error", message = "AdGuard Home phản hồi mã " .. code })
+end
+
+-- 6. Save to UCI. UCI requires the section to exist before set; create it.
+--    Section type is "adguard" — purely a label here, vwrt uci file is a
+--    container for app-level prefs.
+exec("uci set vwrt.adguard=adguard")
+exec(string.format("uci set vwrt.adguard.user='%s'", shq(user)))
+exec(string.format("uci set vwrt.adguard.pass='%s'", shq(pass)))
+exec("uci commit vwrt")
+
+send({ status = "success", message = "Đã lưu credentials. Card sẽ tự cập nhật." })

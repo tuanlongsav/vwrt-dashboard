@@ -102,6 +102,74 @@ const UtilCards = {
             });
     },
 
+    // Replace the AGH stats grid with a credentials prompt. Only invoked when
+    // /cgi-bin/adguard/info returns auth_required = true. Submits to
+    // /cgi-bin/adguard/setauth; on success, restarts the normal poll loop.
+    _renderAghAuthForm: function () {
+        const statsEl = document.getElementById('util-agh-stats');
+        if (!statsEl) return;
+        statsEl.style.gridTemplateColumns = '1fr';  // single-column form
+        statsEl.innerHTML = `
+            <div style="padding:12px; background:var(--bg-body); border-radius:10px;">
+                <div style="font-size:13px; color:var(--text-sub); margin-bottom:8px;">
+                    AdGuard Home v0.107+ yêu cầu Basic Auth. Nhập tài khoản đã cấu hình trong AGH UI:
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:8px; align-items:center;">
+                    <input id="agh-user" placeholder="Username" style="padding:10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-card); color:var(--text-main); font-size:14px;" />
+                    <input id="agh-pass" type="password" placeholder="Password" style="padding:10px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-card); color:var(--text-main); font-size:14px;" />
+                    <button id="agh-save-btn" style="padding:10px 18px; background:#38a169; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Lưu</button>
+                </div>
+                <div id="agh-auth-msg" style="margin-top:6px; font-size:13px; color:var(--text-sub); min-height:18px;"></div>
+            </div>
+        `;
+        // Also clear the top-domain tables (no data without auth)
+        const topQEl = document.getElementById('util-agh-top-queried');
+        const topBEl = document.getElementById('util-agh-top-blocked');
+        if (topQEl) topQEl.innerHTML = '<div style="color:#a0aec0; padding:8px; text-align:center;">Cần đăng nhập</div>';
+        if (topBEl) topBEl.innerHTML = '<div style="color:#a0aec0; padding:8px; text-align:center;">Cần đăng nhập</div>';
+
+        const btn = document.getElementById('agh-save-btn');
+        const msg = document.getElementById('agh-auth-msg');
+        const self = this;
+        if (btn) btn.onclick = function () {
+            const u = (document.getElementById('agh-user') || {}).value || '';
+            const p = (document.getElementById('agh-pass') || {}).value || '';
+            if (!u || !p) { msg.innerText = 'Nhập đủ user và password'; msg.style.color = '#e53e3e'; return; }
+            btn.disabled = true; btn.innerText = 'Đang kiểm tra...';
+            msg.innerText = ''; msg.style.color = 'var(--text-sub)';
+
+            const payload = { username: u, password: p };
+            const headers = { 'Content-Type': 'application/json' };
+            if (typeof VWRT_API !== 'undefined' && VWRT_API.csrfToken) {
+                payload.csrf_token = VWRT_API.csrfToken;
+                headers['X-CSRF-Token'] = VWRT_API.csrfToken;
+            }
+            fetch('/cgi-bin/adguard/setauth', {
+                method: 'POST', headers: headers, body: JSON.stringify(payload),
+            })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        msg.innerText = '✓ ' + (res.message || 'Đã lưu');
+                        msg.style.color = '#38a169';
+                        // Restore grid layout and trigger a refresh
+                        const statsEl2 = document.getElementById('util-agh-stats');
+                        if (statsEl2) statsEl2.style.gridTemplateColumns = 'repeat(4, 1fr)';
+                        setTimeout(() => self.refreshAdguard(), 800);
+                    } else {
+                        msg.innerText = '✗ ' + (res.message || 'Lỗi');
+                        msg.style.color = '#e53e3e';
+                        btn.disabled = false; btn.innerText = 'Lưu';
+                    }
+                })
+                .catch(() => {
+                    msg.innerText = '✗ Lỗi kết nối';
+                    msg.style.color = '#e53e3e';
+                    btn.disabled = false; btn.innerText = 'Lưu';
+                });
+        };
+    },
+
     // ---------- AdGuard Home stats card (Row 4, full-width) ----------
     refreshAdguard: function () {
         fetch('/cgi-bin/adguard/info')
@@ -147,7 +215,9 @@ const UtilCards = {
 
                 if (data.auth_required) {
                     setBadge('CẦN AUTH', '#feebc8', '#7b341e');
-                    if (summaryEl) summaryEl.innerText = `Port ${data.port}: cần Basic Auth — cho phép 127.0.0.1 trong AGH`;
+                    if (summaryEl) summaryEl.innerText = `Port ${data.port}: AGH yêu cầu Basic Auth — nhập credentials bên dưới`;
+                    // Replace stats grid with inline credentials form
+                    this._renderAghAuthForm();
                     return;
                 }
 
