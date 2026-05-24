@@ -791,10 +791,22 @@ function main()
                 pending_start_time = 0
             end
 
-            local is_fm350 = is_atc_mode() -- Check mode
+            -- Choose polling path:
+            --   PATH 1 (AT-based): used when UCI has proto='atc' OR when we
+            --     positively identify the modem via USB VID:PID lookup. All
+            --     vendors in modem_db (Quectel/Fibocom/Sierra/Dell/Telit/
+            --     SimCom/Huawei/ZTE) expose AT over /dev/ttyUSBx, so AT-based
+            --     polling is more reliable than mmcli (which often fails on
+            --     custom-firmware routers where ModemManager isn't installed
+            --     or doesn't recognize the modem).
+            --   PATH 2 (mmcli):  only when neither of the above applies. This
+            --     is the historical Sierra-via-ModemManager path; mostly a
+            --     last-resort fallback now.
+            local _mod_detected = detect_modem_once()
+            local is_fm350 = is_atc_mode() or (_mod_detected ~= nil)
 
             if is_fm350 then
-                -- === PATH 1: FM350 (ATC Protocol) ===
+                -- === PATH 1: AT-based (Quectel / FM350 / Sierra / etc.) ===
                 local port = get_fm350_port()
 
                 -- Detect actual modem hardware so dashboard shows real model

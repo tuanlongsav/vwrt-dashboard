@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.2",
+        "version": "1.0.3",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "Fix WiFi bandwidth hiển thị sai (luôn ra 20 MHz).\n- Trước: đọc bandwidth từ UCI config (`wireless.<dev>.htmode`), default HT20 → luôn 20 MHz dù radio thực chạy 80/160 MHz.\n- Sau: đọc từ iwinfo trước (bandwidth thực đang chạy), fallback UCI sau.\n- Hỗ trợ patterns: 'HT Mode: HE80', 'Channel: 149 (5745 MHz / 80 MHz)', v.v.\n- Sửa thêm 1.0.1 (Quectel parser, frequency display)."
+        "log": "Fix Quectel modem rơi vào path mmcli sai → cache 'No Device'.\n- Poller giờ chọn AT-based path khi USB scan tìm thấy modem trong modem_db (kể cả khi UCI không có proto=atc).\n- Trên Fudy, proto là 'wwan'/'modemmanager' không phải 'atc' → trước đó vào nhánh mmcli, mmcli không detect RM520 → ghi 'No Device' vào cache.\n- Sửa: nếu modem_db.scan_usb() trả về vendor (Quectel/Fibocom/Sierra/...) thì ép path 1 (AT) thay vì path 2 (mmcli).\n- Hệ quả: RM520N-GL giờ chạy AT+QENG/CSQ/QCAINFO → có RSRP/SINR đầy đủ + VinaPhone hiển thị đúng."
     }
 }
