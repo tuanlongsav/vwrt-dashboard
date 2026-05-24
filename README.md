@@ -124,10 +124,58 @@ sh /tmp/uninstall.sh --purge -y
 
 | Item | Tối thiểu |
 |---|---|
-| OpenWrt | **22.03+** (LuCI dispatcher dùng ucode) |
+| OpenWrt | **22.03+** (LuCI dispatcher dùng ucode); test ổn trên 24.10.1 |
+| Architecture | aarch64, mips, x86_64 (bất kỳ arch nào OpenWrt hỗ trợ) |
 | RAM | 64 MB |
 | `/overlay` free | ≥ 2 MB |
 | Modem driver | `modemmanager` **HOẶC** `sms-tool` (tùy modem) |
 | Internet trên router | Để pull từ GitHub (hoặc dùng SCP offline — xem INSTALL.md) |
+
+---
+
+## ✅ Firmware Đã Test
+
+| Router | OS | Arch | Trạng thái | Ghi chú |
+|---|---|---|---|---|
+| Fudy MT3000 | OpenWrt 24.10.1 (Fudy fork) | aarch64_cortex-a53 | ✅ Cài được | Cần auto-bypass opkg signature (script tự handle) |
+
+> Test thử trên router khác và mở PR/issue để cập nhật bảng này.
+
+---
+
+## 🐛 Troubleshooting Nhanh
+
+### ❌ `opkg install lua-cjson` → "Unknown package"
+
+Trên các **firmware fork** (Fudy, GL.iNet, ImmortalWrt...) thường bị do `usign` public key của OpenWrt official chưa được ship trong firmware → mọi feed báo `Signature check failed` → opkg từ chối Packages list.
+
+**Script tự xử lý** kể từ commit [`622f7b7`](https://github.com/tuanlongsav/vwrt-dashboard/commit/622f7b7): tự `option check_signature 0` rồi retry. Nếu muốn fix tay:
+
+```sh
+echo 'option check_signature 0' >> /etc/opkg.conf
+opkg update && opkg install lua-cjson luci-lib-jsonc
+```
+
+### ⏭️ Bỏ qua opkg hoàn toàn (đã cài tay rồi)
+
+```sh
+SKIP_DEPS=1 wget -O- https://raw.githubusercontent.com/tuanlongsav/vwrt-dashboard/main/install.sh | sh
+```
+
+### 💾 Router quá ít RAM — bỏ backup
+
+```sh
+SKIP_BACKUP=1 wget -O- https://raw.githubusercontent.com/tuanlongsav/vwrt-dashboard/main/install.sh | sh
+```
+
+### 🔍 Xem log install
+
+```sh
+cat /tmp/vwrt_install.log
+```
+
+### 📖 Đầy đủ hơn
+
+Xem [INSTALL.md](INSTALL.md) — có troubleshooting cho từng module (SMS không hiện, CPU/RAM hiển thị `--`, CSRF lỗi, modem port sai...).
 
 ---
