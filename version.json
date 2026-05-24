@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.6",
+        "version": "1.0.7",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "Gỡ sidebar + mở rộng card Trạng thái mạng + thêm Public IP.\n- Sidebar trái xóa hoàn toàn (HTML aside, overlay, sidebar.js script).\n- Card Trạng thái mạng giờ hiển thị TẤT CẢ interface (không chỉ top 5) với IPv4/IPv6/MAC/RX/TX/proto/state, scroll khi quá 360px.\n- Modem detail popup thêm trường 'Public IP' (IP egress nhìn từ internet, khác wan_ip nếu CGNAT).\n- Poller mới hỏi api.ipify.org qua interface modem mỗi 5 phút (timeout 3s, không hammering)."
+        "log": "AdGuard Home dashboard card + Robust modem detection.\n\nDashboard:\n- Xóa card Trạng thái mạng.\n- Row 3: MultiWAN + Tailscale (Tailscale lên ngang hàng).\n- Row 4: AdGuard Home full-width với stats inline (số truy vấn, đã chặn, tỉ lệ %, thời gian xử lý TB) + Top 5 tên miền truy vấn / bị chặn.\n- Bỏ nút AdBlock Fast — chỉ còn AdGuard Home.\n- Badge BẬT/TẮT/CẦN AUTH/CHƯA CÀI theo state thực của AGH.\n- Nút \"Mở AdGuard ↗\" dùng port phát hiện được từ AGH config.\n\nBackend:\n- /cgi-bin/adguard/info: proxy /control/stats + /control/status từ 127.0.0.1, detect port từ AdGuardHome.yaml.\n\nModem detection:\n- Thêm USB PIDs 2cb7:0a08/09/0a/0b cho FM350-GL ở các USB mode khác nhau (RNDIS/QMI/qmodewm).\n- Fallback theo vendor-only: nếu PID lạ nhưng VID match (Quectel/Fibocom/Sierra/Dell/Telit/SimCom/Huawei/ZTE/Foxconn/Intel), trả về vendor + at_port hint, AT+CGMM sẽ tự fill model."
     }
 }

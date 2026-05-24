@@ -555,24 +555,8 @@
                              ROW 3: UTILITY CARDS — moved from sidebar to dashboard.
                              Click → existing module's full-modal opens.
                              ========================================================= -->
+                        <!-- ROW 3: MultiWAN + Tailscale -->
                         <div class="cards-track">
-
-                            <!-- TRẠNG THÁI MẠNG — full details inline, no modal needed -->
-                            <div class="card">
-                                <div class="card-header-compact">
-                                    <div class="card-icon-small" style="background:rgba(49, 130, 206, 0.1); color:#3182ce;">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
-                                    </div>
-                                    <div class="header-text-col">
-                                        <h3>Trạng thái mạng</h3>
-                                        <div class="model-name" id="util-net-summary">Đang tải...</div>
-                                    </div>
-                                    <div style="margin-left:auto;"><span class="net-tag tag-blue" id="util-net-count">--</span></div>
-                                </div>
-                                <div class="sys-details-compact" id="util-net-list" style="min-height: 80px; max-height: 360px; overflow-y: auto;">
-                                    <div style="text-align:center; color:#999; padding:20px; font-size:14px;">Đang tải...</div>
-                                </div>
-                            </div>
 
                             <!-- MULTIWAN -->
                             <div class="card" onclick="UtilCards.openMwan3()" style="cursor:pointer;">
@@ -591,34 +575,6 @@
                                 </div>
                             </div>
 
-                        </div>
-
-                        <div class="cards-track">
-
-                            <!-- CHẶN QUẢNG CÁO + AdGuard Home -->
-                            <div class="card">
-                                <div class="card-header-compact">
-                                    <div class="card-icon-small" style="background:rgba(229, 62, 62, 0.1); color:#e53e3e;">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                                    </div>
-                                    <div class="header-text-col">
-                                        <h3>Chặn quảng cáo</h3>
-                                        <div class="model-name" id="util-ad-summary">AdBlock + AdGuard Home</div>
-                                    </div>
-                                    <div style="margin-left:auto;"><span class="net-tag tag-blue" id="util-ad-status">--</span></div>
-                                </div>
-                                <div class="sys-details-compact" style="padding:5px; display:flex; flex-direction:column; gap:8px;">
-                                    <button onclick="UtilCards.openAdblock()" style="padding:10px; background:rgba(229, 62, 62, 0.08); border:1px solid rgba(229, 62, 62, 0.2); border-radius:8px; color:#c53030; font-weight:600; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px;">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                                        AdBlock Fast (UCI list)
-                                    </button>
-                                    <button onclick="UtilCards.openAdGuard()" style="padding:10px; background:rgba(56, 161, 105, 0.08); border:1px solid rgba(56, 161, 105, 0.2); border-radius:8px; color:#2f855a; font-weight:600; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px;">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                                        AdGuard Home (DNS-level)
-                                    </button>
-                                </div>
-                            </div>
-
                             <!-- TAILSCALE VPN -->
                             <div class="card" onclick="UtilCards.openTailscale()" style="cursor:pointer;">
                                 <div class="card-header-compact">
@@ -633,6 +589,59 @@
                                 </div>
                                 <div class="sys-details-compact" id="util-ts-detail" style="min-height: 80px; padding:10px;">
                                     <div style="text-align:center; color:#999; padding:15px; font-size:14px;">Đang tải...</div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- ROW 4: ADGUARD HOME — full-width, stats inline -->
+                        <div class="cards-track" style="grid-template-columns: 1fr;">
+
+                            <div class="card">
+                                <div class="card-header-compact">
+                                    <div class="card-icon-small" style="background:rgba(56, 161, 105, 0.1); color:#38a169;">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                    </div>
+                                    <div class="header-text-col">
+                                        <h3>Chặn quảng cáo — AdGuard Home</h3>
+                                        <div class="model-name" id="util-agh-summary">Đang kiểm tra trạng thái...</div>
+                                    </div>
+                                    <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+                                        <span class="net-tag" id="util-agh-status" style="background:#edf2f7; color:#718096;">--</span>
+                                        <button onclick="UtilCards.openAdGuard()" style="padding:6px 12px; background:#38a169; color:white; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;">Mở AdGuard ↗</button>
+                                    </div>
+                                </div>
+
+                                <!-- Stats grid: queries / blocked / blocked% / avg time -->
+                                <div id="util-agh-stats" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; padding:12px;">
+                                    <div style="background:var(--bg-body); border-radius:10px; padding:12px; text-align:center;">
+                                        <div style="font-size:13px; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Truy vấn DNS</div>
+                                        <div id="util-agh-queries" style="font-size:22px; font-weight:700; color:#3182ce;">--</div>
+                                    </div>
+                                    <div style="background:var(--bg-body); border-radius:10px; padding:12px; text-align:center;">
+                                        <div style="font-size:13px; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Đã chặn</div>
+                                        <div id="util-agh-blocked" style="font-size:22px; font-weight:700; color:#e53e3e;">--</div>
+                                    </div>
+                                    <div style="background:var(--bg-body); border-radius:10px; padding:12px; text-align:center;">
+                                        <div style="font-size:13px; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Tỉ lệ chặn</div>
+                                        <div id="util-agh-rate" style="font-size:22px; font-weight:700; color:#ed8936;">--</div>
+                                    </div>
+                                    <div style="background:var(--bg-body); border-radius:10px; padding:12px; text-align:center;">
+                                        <div style="font-size:13px; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Thời gian TB</div>
+                                        <div id="util-agh-avgtime" style="font-size:22px; font-weight:700; color:#805ad5;">--</div>
+                                    </div>
+                                </div>
+
+                                <!-- Top domains tables -->
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; padding:0 12px 12px;">
+                                    <div>
+                                        <div style="font-size:13px; font-weight:600; color:var(--text-sub); margin-bottom:6px;">Top tên miền truy vấn</div>
+                                        <div id="util-agh-top-queried" style="background:var(--bg-body); border-radius:8px; padding:8px; font-size:13px; min-height:80px;"></div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size:13px; font-weight:600; color:var(--text-sub); margin-bottom:6px;">Top tên miền bị chặn</div>
+                                        <div id="util-agh-top-blocked" style="background:var(--bg-body); border-radius:8px; padding:8px; font-size:13px; min-height:80px;"></div>
+                                    </div>
                                 </div>
                             </div>
 

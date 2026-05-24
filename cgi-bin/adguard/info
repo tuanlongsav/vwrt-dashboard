@@ -1,0 +1,156 @@
+#!/usr/bin/lua
+--
+-- /cgi-bin/adguard/info — AdGuard Home status + stats proxy
+--
+-- AdGuard Home exposes /control/stats and /control/status on its admin
+-- interface (port 3000 by default). Both endpoints require HTTP Basic Auth
+-- since v0.107 — but most homelab installs whitelist 127.0.0.1, so this
+-- backend tries unauthenticated localhost first.
+--
+-- Returns:
+--   { installed: bool, running: bool, port: int, auth_required: bool,
+--     stats: {...},    -- raw payload from /control/stats
+--     status: {...}    -- raw payload from /control/status
+--   }
+--
+-- All errors are non-fatal: missing AGH or unreachable port still returns
+-- a usable JSON with the relevant flags so the dashboard card can show a
+-- helpful state.
+--
+
+local cjson = require "cjson"
+
+local function read_file(path)
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local c = f:read("*all")
+    f:close()
+    return c
+end
+
+local function exec(cmd)
+    local h = io.popen(cmd .. " 2>/dev/null")
+    if not h then return "" end
+    local s = h:read("*a") or ""
+    h:close()
+    return s
+end
+
+-- ----------------------------------------------------------------------
+-- 1. Is AdGuard Home installed?
+-- ----------------------------------------------------------------------
+local install_paths = {
+    "/opt/AdGuardHome/AdGuardHome",
+    "/usr/bin/AdGuardHome",
+    "/usr/sbin/AdGuardHome",
+    "/etc/init.d/AdGuardHome",
+    "/etc/init.d/adguardhome",
+}
+local installed = false
+for _, p in ipairs(install_paths) do
+    local f = io.open(p, "r")
+    if f then f:close(); installed = true; break end
+end
+
+if not installed then
+    print("Content-type: application/json\n\n")
+    print(cjson.encode({
+        installed = false,
+        running = false,
+        message = "AdGuard Home chưa được cài đặt. opkg install adguardhome",
+    }))
+    return
+end
+
+-- ----------------------------------------------------------------------
+-- 2. Is the daemon running?
+-- ----------------------------------------------------------------------
+local pidout = exec("pgrep -f AdGuardHome")
+local running = (pidout ~= nil and pidout:gsub("%s", "") ~= "")
+
+-- ----------------------------------------------------------------------
+-- 3. Detect admin port from config (default 3000)
+-- ----------------------------------------------------------------------
+local config_paths = {
+    "/etc/AdGuardHome/AdGuardHome.yaml",
+    "/etc/AdGuardHome.yaml",
+    "/opt/etc/AdGuardHome.yaml",
+    "/opt/AdGuardHome/AdGuardHome.yaml",
+    "/var/AdGuardHome/AdGuardHome.yaml",
+}
+local port = 3000
+local bind_host = "127.0.0.1"
+for _, cp in ipairs(config_paths) do
+    local content = read_file(cp)
+    if content then
+        local p = content:match("bind_port:%s*(%d+)") or content:match("port:%s*(%d+)")
+        if p then port = tonumber(p) end
+        -- Also support new format with address: 0.0.0.0:3000
+        local addr = content:match("bind_host:%s*([%d%.]+)") or content:match("address:%s*([%d%.]+:%d+)")
+        if addr then
+            local h, prt = addr:match("([%d%.]+):(%d+)")
+            if h and prt then bind_host = h; port = tonumber(prt)
+            elseif addr:match("^[%d%.]+$") then bind_host = addr end
+        end
+        break
+    end
+end
+
+-- ----------------------------------------------------------------------
+-- 4. Fetch stats + status from local AGH HTTP API (no auth attempt first)
+-- ----------------------------------------------------------------------
+local base = "http://127.0.0.1:" .. port  -- always probe via loopback
+local function fetch_json(path)
+    local cmd = string.format(
+        "curl -s --max-time 3 -o /tmp/agh_resp.json -w '%%{http_code}' %s%s",
+        base, path
+    )
+    local code = exec(cmd):gsub("%s", "")
+    local body = read_file("/tmp/agh_resp.json") or ""
+    os.remove("/tmp/agh_resp.json")
+    return tonumber(code) or 0, body
+end
+
+local stats, status_json, auth_required = nil, nil, false
+
+if running then
+    local code, body = fetch_json("/control/stats")
+    if code == 401 or code == 403 then
+        auth_required = true
+    elseif code >= 200 and code < 300 and body ~= "" then
+        local ok, parsed = pcall(cjson.decode, body)
+        if ok then stats = parsed end
+    end
+
+    local code2, body2 = fetch_json("/control/status")
+    if code2 >= 200 and code2 < 300 and body2 ~= "" then
+        local ok, parsed = pcall(cjson.decode, body2)
+        if ok then status_json = parsed end
+    elseif code2 == 401 or code2 == 403 then
+        auth_required = true
+    end
+end
+
+-- ----------------------------------------------------------------------
+-- 5. Return aggregated info
+-- ----------------------------------------------------------------------
+print("Content-type: application/json\n\n")
+print(cjson.encode({
+    installed       = true,
+    running         = running,
+    port            = port,
+    auth_required   = auth_required,
+    stats           = stats,
+    status          = status_json,
+    -- Convenience fields for dashboard (avoid frontend digging)
+    num_dns_queries     = stats and stats.num_dns_queries or 0,
+    num_blocked         = stats and (stats.num_blocked_filtering or 0)
+                                  + (stats.num_replaced_safebrowsing or 0)
+                                  + (stats.num_replaced_safesearch or 0)
+                                  + (stats.num_replaced_parental or 0)
+                          or 0,
+    avg_processing_time = stats and stats.avg_processing_time or 0,
+    -- AGH version + DNS protection state
+    protection_enabled  = status_json and status_json.protection_enabled or nil,
+    version             = status_json and status_json.version or nil,
+}))

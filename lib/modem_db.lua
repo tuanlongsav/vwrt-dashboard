@@ -31,9 +31,14 @@ M.USB_IDS = {
     ["2c7c:0620"] = { vendor = "Quectel", model = "EM160R-GL",  network = "4G", at_port = 2 },
     ["2c7c:0700"] = { vendor = "Quectel", model = "RG500U-CN",  network = "5G", at_port = 2 },
 
-    -- Fibocom (VID 2cb7)
+    -- Fibocom (VID 2cb7). FM350-GL exposes different PIDs per USB mode:
+    --   0a07 = MBIM default, 0a05 = FM150-AE, 0a08/0a0a = RNDIS/QMI ("qmodewm")
     ["2cb7:0a05"] = { vendor = "Fibocom", model = "FM150-AE",   network = "5G", at_port = 3 },
     ["2cb7:0a07"] = { vendor = "Fibocom", model = "FM350-GL",   network = "5G", at_port = 3 },
+    ["2cb7:0a08"] = { vendor = "Fibocom", model = "FM350-GL",   network = "5G", at_port = 3 },
+    ["2cb7:0a09"] = { vendor = "Fibocom", model = "FM350-GL",   network = "5G", at_port = 3 },
+    ["2cb7:0a0a"] = { vendor = "Fibocom", model = "FM350-GL",   network = "5G", at_port = 3 },
+    ["2cb7:0a0b"] = { vendor = "Fibocom", model = "FM350-GL",   network = "5G", at_port = 3 },
     ["2cb7:01a0"] = { vendor = "Fibocom", model = "L850-GL",    network = "4G", at_port = 1 },
     ["2cb7:01a2"] = { vendor = "Fibocom", model = "L860-GL",    network = "4G", at_port = 1 },
     ["2cb7:0210"] = { vendor = "Fibocom", model = "NL668",      network = "4G", at_port = 1 },
@@ -126,6 +131,23 @@ M.AT_FALLBACK = {
     { pattern = "SIM7600", vendor = "SimCom",  model = "SIM7600",    network = "4G" },
 }
 
+-- Vendor-only fallback when USB PID is unknown. Many modems expose different
+-- PIDs depending on the USB mode (MBIM / RNDIS / ECM / NCM / QMI / "qmodewm").
+-- If we recognise the vendor we can still drive the modem; AT+CGMM (called
+-- by mobile_poller) will then resolve the exact model.
+M.VENDOR_BY_VID = {
+    ["2c7c"] = { vendor = "Quectel", at_port = 2 },
+    ["2cb7"] = { vendor = "Fibocom", at_port = 3 },
+    ["1199"] = { vendor = "Sierra",  at_port = 3 },
+    ["413c"] = { vendor = "Dell",    at_port = 3 },
+    ["1bc7"] = { vendor = "Telit",   at_port = 3 },
+    ["1e0e"] = { vendor = "SimCom",  at_port = 2 },
+    ["12d1"] = { vendor = "Huawei",  at_port = 0 },
+    ["19d2"] = { vendor = "ZTE",     at_port = 1 },
+    ["0489"] = { vendor = "Foxconn", at_port = 3 },
+    ["8087"] = { vendor = "Intel",   at_port = 3 },  -- Intel XMM-based modules
+}
+
 -- Look up a modem entry by USB VID:PID string (e.g. "2c7c:0800")
 -- Returns: table or nil
 function M.find_by_usb(id)
@@ -149,11 +171,18 @@ function M.find_by_at_response(text)
     return nil
 end
 
--- Scan all attached USB devices via /sys/bus/usb/devices, return first known modem
--- Returns: { id, vendor, model, network, at_port, syspath } or nil
+-- Scan all attached USB devices via /sys/bus/usb/devices, return first known modem.
+-- Two-tier match:
+--   1) Specific USB VID:PID → known vendor + model + AT port hint (best).
+--   2) Vendor-only match → vendor + at_port hint, model = "Unknown" (AT+CGMM
+--      in mobile_poller will resolve the real model name).
+-- This handles modems running in alternate USB modes (RNDIS/QMI/NCM/"qmodewm")
+-- where the PID differs from the default MBIM mode we initially mapped.
 function M.scan_usb()
     local handle = io.popen("ls /sys/bus/usb/devices/ 2>/dev/null")
     if not handle then return nil end
+
+    local vendor_match = nil  -- second-best candidate seen during scan
 
     for dev in handle:lines() do
         -- Only top-level devices (e.g. "1-1.2"), skip controllers ("usb1") and interfaces ("1-1.2:1.0")
@@ -165,6 +194,8 @@ function M.scan_usb()
                 local pid = (f_pid:read("*l") or ""):lower():gsub("%s", "")
                 f_vid:close(); f_pid:close()
                 local key = vid .. ":" .. pid
+
+                -- Tier 1: exact PID hit
                 local entry = M.USB_IDS[key]
                 if entry then
                     handle:close()
@@ -177,11 +208,27 @@ function M.scan_usb()
                         syspath = "/sys/bus/usb/devices/" .. dev,
                     }
                 end
+
+                -- Tier 2: remember the first vendor-only match for fallback
+                if not vendor_match then
+                    local vmatch = M.VENDOR_BY_VID and M.VENDOR_BY_VID[vid]
+                    if vmatch then
+                        vendor_match = {
+                            id = key,
+                            vendor = vmatch.vendor,
+                            model = "Unknown",      -- AT+CGMM will fill this in
+                            network = "?",
+                            at_port = vmatch.at_port,
+                            syspath = "/sys/bus/usb/devices/" .. dev,
+                        }
+                    end
+                end
             end
         end
     end
     handle:close()
-    return nil
+    -- No specific PID matched; return the vendor-only fallback if we found one.
+    return vendor_match
 end
 
 -- Probe modem identity via AT command, falling back to "Unknown"
