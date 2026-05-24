@@ -202,15 +202,28 @@ function get_wifi_info()
 
                     -- Center frequency of the actually-running channel
                     local freq_mhz = channel_to_freq(channel)
-                    -- Channel bandwidth in MHz, parsed from htmode (e.g. HE80 → 80).
-                    -- Fall back to the iwinfo "HT Mode" line if config wasn't set.
+
+                    -- Channel bandwidth in MHz. Prefer the value reported by
+                    -- iwinfo (the actually running bandwidth) over UCI config
+                    -- (which may have a stale or default HT20 even when the
+                    -- radio is running HE80 / HE160).
+                    --
+                    -- iwinfo line forms across drivers:
+                    --   "HT Mode: VHT80"     (ath10k / ath11k)
+                    --   "HT Mode: HE160"     (mt76 / iwlwifi modern)
+                    --   "HW Mode(s): 802.11nac"
+                    -- We capture trailing digits after any prefix (HT/VHT/HE).
                     local bw_mhz = nil
-                    if config and config.conf_htmode then
+                    local info_bw =
+                        info_str:match("HT Mode:%s*%a*(%d+)")     -- "HT Mode: HE160" → 160
+                        or info_str:match("HT mode:%s*%a*(%d+)")
+                        or info_str:match("Channel.-MHz.-/%s*(%d+)%s*MHz")  -- "Channel: 149 (5745 MHz / 80 MHz)"
+                    if info_bw then bw_mhz = tonumber(info_bw) end
+
+                    -- Fallback only if iwinfo gave nothing: parse UCI htmode
+                    -- (HE80 / VHT80 / HT40 / HT20).
+                    if not bw_mhz and config and config.conf_htmode then
                         bw_mhz = tonumber(config.conf_htmode:match("(%d+)"))
-                    end
-                    if not bw_mhz then
-                        local info_bw = info_str:match("HT Mode:%s*[A-Z]*(%d+)")
-                        bw_mhz = tonumber(info_bw)
                     end
 
                     if config then
