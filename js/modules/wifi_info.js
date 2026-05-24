@@ -101,29 +101,48 @@ const WifiModule = {
         wifiList.forEach((group, index) => {
             const passId = `wifi-pass-${index}`;
             const clientColor = group.totalClients > 0 ? '#3182ce' : '#a0aec0';
-            const fmtWidth = (ht) => (ht || '').replace(/[A-Z]+/, '') + 'MHz';
+
+            // Bandwidth (channel width) — backend now supplies it but fall back to
+            // parsing htmode for old payloads.
+            const bw = (item) => {
+                if (item.bw_mhz) return item.bw_mhz + ' MHz';
+                const m = (item.conf_htmode || '').match(/(\d+)/);
+                return m ? m[1] + ' MHz' : '?';
+            };
+            // Center frequency — backend computes from channel num.
+            const freq = (item) => item.freq_mhz ? item.freq_mhz + ' MHz' : null;
+
+            // "Ch 36 · 5180 MHz · BW 80 MHz"
+            const describe = (item) => {
+                const parts = [`Ch ${item.channel}`];
+                const f = freq(item);
+                if (f) parts.push(f);
+                parts.push(`BW ${bw(item)}`);
+                return parts.join(' · ');
+            };
+
             let tagHtml = '';
-            let metaInfoHtml = ''; 
+            let metaInfoHtml = '';
             if (group.items.length > 1) {
                 tagHtml = `<span class="net-tag" style="background:linear-gradient(90deg, #805ad5, #b794f4); color:white; font-size: 11px;">2.4G + 5G</span>`;
                 const w24 = group.items.find(i => i.band === '2.4GHz');
                 const w5 = group.items.find(i => i.band === '5GHz');
-                
+
                 metaInfoHtml = `
                     <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px; display:flex; flex-direction:column; gap:2px;">
-                        ${w5 ? `<span style="display:flex; align-items:center; gap:4px;"><span style="width:6px; height:6px; background:#3182ce; border-radius:50%;"></span> 5G: Ch ${w5.channel} (${fmtWidth(w5.conf_htmode)})</span>` : ''}
-                        ${w24 ? `<span style="display:flex; align-items:center; gap:4px;"><span style="width:6px; height:6px; background:#38a169; border-radius:50%;"></span> 2.4G: Ch ${w24.channel} (${fmtWidth(w24.conf_htmode)})</span>` : ''}
+                        ${w5 ? `<span style="display:flex; align-items:center; gap:4px;"><span style="width:6px; height:6px; background:#3182ce; border-radius:50%;"></span> 5G: ${describe(w5)}</span>` : ''}
+                        ${w24 ? `<span style="display:flex; align-items:center; gap:4px;"><span style="width:6px; height:6px; background:#38a169; border-radius:50%;"></span> 2.4G: ${describe(w24)}</span>` : ''}
                     </div>
                 `;
             } else {
                 const item = group.items[0];
                 const colorClass = item.band === '5GHz' ? 'tag-blue' : 'tag-green';
                 tagHtml = `<span class="net-tag ${colorClass}" style="font-size: 11px;">${item.band}</span>`;
-                
+
                 metaInfoHtml = `
                     <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px; display:flex; align-items:center; gap:5px;">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                        Channel ${item.channel} • ${fmtWidth(item.conf_htmode)}
+                        ${describe(item)}
                     </div>
                 `;
             }
@@ -188,12 +207,26 @@ openEditModal: function(dataStr) {
         let channelOptions = `<option value="auto" ${w.conf_channel == 'auto' ? 'selected' : ''}>Tự động (Auto)</option>`;
         
         // Use dynamic channels from backend, fallback to defaults
+        // Channel list. Backend now sends [{num, freq}, ...]; older payloads
+        // may still be a plain array of numbers, so handle both shapes.
         let channelList = w.channels || [];
         if (channelList.length === 0) {
             channelList = is5G ? [36, 40, 44, 48, 149, 153, 157, 161] : [1,2,3,4,5,6,7,8,9,10,11,12,13];
         }
-        channelList.forEach(ch => {
-            channelOptions += `<option value="${ch}" ${w.conf_channel == ch ? 'selected' : ''}>Kênh ${ch}</option>`;
+        // Inline channel→frequency calculator (matches backend channel_to_freq).
+        const chanFreq = (n) => {
+            n = Number(n);
+            if (!n) return null;
+            if (n === 14) return 2484;
+            if (n >= 1   && n <= 13)  return 2407 + 5 * n;
+            if (n >= 32  && n <= 177) return 5000 + 5 * n;
+            return null;
+        };
+        channelList.forEach(item => {
+            const ch   = (typeof item === 'object') ? item.num  : item;
+            const freq = (typeof item === 'object') ? item.freq : chanFreq(item);
+            const label = freq ? `Kênh ${ch} (${freq} MHz)` : `Kênh ${ch}`;
+            channelOptions += `<option value="${ch}" ${w.conf_channel == ch ? 'selected' : ''}>${label}</option>`;
         });
 
         let modeOptions = '';

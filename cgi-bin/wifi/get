@@ -88,33 +88,59 @@ function get_smart_modes(iface, info_str, band)
     return modes
 end
 
+-- Convert a WiFi channel number to its center frequency in MHz.
+-- Reference: IEEE 802.11 channel plans.
+--   2.4 GHz : ch 1..13 = 2407 + 5·N  (ch 1 = 2412, ch 6 = 2437, ch 11 = 2462)
+--             ch 14    = 2484         (Japan special)
+--   5 GHz   : ch N     = 5000 + 5·N  (ch 36 = 5180, ch 149 = 5745)
+--   6 GHz   : ch N     = 5950 + 5·N  (ch 1 = 5955, ch 37 = 6135)
+function channel_to_freq(ch)
+    ch = tonumber(ch)
+    if not ch then return nil end
+    if ch == 14 then return 2484 end
+    if ch >= 1   and ch <= 13  then return 2407 + 5 * ch end
+    if ch >= 32  and ch <= 177 then return 5000 + 5 * ch end   -- 5 GHz
+    if ch >= 1   and ch <= 233 then return 5950 + 5 * ch end   -- 6 GHz (Wi-Fi 6E)
+    return nil
+end
+
 function get_channels(iface, band)
+    -- Returns a list of { num, freq } pairs so the frontend can show
+    -- "Ch 36 (5180 MHz)" in dropdowns without re-computing client-side.
     local channels = {}
+    local seen = {}
     local freq_str = exec("iwinfo " .. iface .. " freqlist")
-    
+
     if freq_str and freq_str ~= "" then
         for ch in freq_str:gmatch("Channel (%d+)") do
             local ch_num = tonumber(ch)
-            if ch_num then
-                -- Filter by band
+            if ch_num and not seen[ch_num] then
+                seen[ch_num] = true
                 if band == "5GHz" and ch_num > 14 then
-                    table.insert(channels, ch_num)
+                    table.insert(channels, { num = ch_num, freq = channel_to_freq(ch_num) })
                 elseif band == "2.4GHz" and ch_num <= 14 then
-                    table.insert(channels, ch_num)
+                    table.insert(channels, { num = ch_num, freq = channel_to_freq(ch_num) })
                 end
             end
         end
     end
-    
-    -- Fallback if empty
+
+    -- Fallback if iwinfo returned nothing usable
     if #channels == 0 then
+        local list
         if band == "5GHz" then
-            channels = {36, 40, 44, 48, 149, 153, 157, 161}
+            list = {36, 40, 44, 48, 149, 153, 157, 161}
         else
-            for i = 1, 13 do table.insert(channels, i) end
+            list = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
+        end
+        for _, n in ipairs(list) do
+            table.insert(channels, { num = n, freq = channel_to_freq(n) })
         end
     end
-    
+
+    -- Sort ascending by channel number
+    table.sort(channels, function(a, b) return a.num < b.num end)
+
     return channels
 end
 
@@ -174,12 +200,27 @@ function get_wifi_info()
                     
                     local support_list = get_smart_modes(iface, info_str, band)
 
+                    -- Center frequency of the actually-running channel
+                    local freq_mhz = channel_to_freq(channel)
+                    -- Channel bandwidth in MHz, parsed from htmode (e.g. HE80 → 80).
+                    -- Fall back to the iwinfo "HT Mode" line if config wasn't set.
+                    local bw_mhz = nil
+                    if config and config.conf_htmode then
+                        bw_mhz = tonumber(config.conf_htmode:match("(%d+)"))
+                    end
+                    if not bw_mhz then
+                        local info_bw = info_str:match("HT Mode:%s*[A-Z]*(%d+)")
+                        bw_mhz = tonumber(info_bw)
+                    end
+
                     if config then
                         table.insert(wifis, {
                             iface = iface,
                             ssid = ssid,
                             band = band,
                             channel = channel,
+                            freq_mhz = freq_mhz,      -- center freq (e.g. 5180)
+                            bw_mhz   = bw_mhz,        -- channel width (20/40/80/160)
                             clients = client_count,
                             device = config.device_section,
                             section = config.iface_section,

@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.0",
+        "version": "1.0.1",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "VWRT fork by longht — release đầu tiên của bản fork riêng.\nFork base: VWRT 1.1.2 (vietter99/vwrtdashbroad) + improvements:\n- Security audit: CSRF (mwan3/sms-archive), XSS (clients/SMS), command injection (passwd), Lua-pattern security.lua, undefined delete_sent_msg.\n- UTF-8 mojibake fix cho thông báo Tiếng Việt.\n- Mở rộng nhận diện modem 4G/5G qua USB VID:PID (40+ models: Quectel, Fibocom, Sierra, Telit, SimCom, Huawei, Dell, ZTE).\n- Tab Network hiện cả interface đang quay số (chưa lên IP).\n- OTA giờ pull từ fork này, không từ upstream.\n- Installer one-line: install.sh / uninstall.sh + auto-bypass opkg signature trên firmware fork.\n- Đổi font sang Noto Sans Display + tăng kích thước font cho dễ đọc."
+        "log": "Quectel RM5xx 5G NSA support + WiFi MHz hiển thị đúng.\n- Thêm Quectel AT parser: AT+QENG/QCAINFO/QTEMP/CSQ → đọc RSRP/SINR/RSRQ/RSSI cho RM520, EC25, EM12, RG500U, v.v.\n- Branch poller theo vendor (Quectel/Fibocom) — không còn signal=0 trên modem Quectel.\n- Hiển thị mode 5G NSA chi tiết: \"5G NSA | B3 + n78\" thay vì chỉ \"LTE\".\n- Lấy AT port đúng theo modem từ modem_db (Quectel=ttyUSB2, FM350=ttyUSB3, v.v.) — không còn hardcode ttyUSB3.\n- Sửa bug check_and_fix_modem_config phá routing khi network.5G.device là alias (vd eth_5g trên Fudy).\n- WiFi: kênh hiện đầy đủ Ch + center frequency MHz + bandwidth MHz (vd \"Ch 36 · 5180 MHz · BW 80 MHz\").\n- Dropdown chọn kênh có MHz: \"Kênh 36 (5180 MHz)\".\n- Endpoint /cgi-bin/mobile/get giờ trả poller diagnostic state."
     }
 }
