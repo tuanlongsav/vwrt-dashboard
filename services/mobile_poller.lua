@@ -526,24 +526,40 @@ end
 
 local function check_and_fix_modem_config()
     local current_dev = exec("uci -q get network.5G.device"):gsub("\n", "")
-    local dev_valid = false
-    
-    -- Check if configured device actually exists
-    if current_dev ~= "" and current_dev ~= "nil" then
-         if file_exists(current_dev) then
-             dev_valid = true
-         end
+
+    -- Three legitimate forms for network.5G.device on different firmwares:
+    --   1) Empty   → genuinely missing, auto-fix needed
+    --   2) "/dev/ttyUSBx" → tty path; valid only if the file exists
+    --   3) "eth_5g" / "wwan0" / aliases → UCI device alias resolved elsewhere
+    --      DO NOT touch — replacing this with a tty path breaks Fudy/GL.iNet
+    --      builds that use a virtual modem device. (Reproduced on Fudy MT3000:
+    --      eth_5g was a working alias, the auto-fix to /dev/ttyUSB3 silently
+    --      replaced it and broke routing.)
+
+    if current_dev == "" or current_dev == "nil" then
+        -- Form 1: empty → fix
+    elseif current_dev:find("^/dev/") then
+        -- Form 2: tty path → check existence
+        if file_exists(current_dev) then return end  -- OK, nothing to fix
+        -- file missing → fall through to auto-fix below
+    else
+        -- Form 3: alias → leave alone
+        return
     end
 
-    if not dev_valid then
-        local detected = find_modem_device()
-        if detected then
-            os.execute("logger -t VWRT_POLLER 'Invalid/Missing device config (" .. current_dev .. "). Auto-fixing to: " .. detected .. "'")
-            os.execute("uci set network.5G.device='" .. detected .. "' && uci commit network && /etc/init.d/network reload")
-            -- Wait for network to settle
-            os.execute("sleep 5")
-        end
+    -- Pick the right tty for the detected modem (Quectel→ttyUSB2, FM350→ttyUSB3, …)
+    local detected
+    local mod = detect_modem_once()
+    if mod and mod.at_port then
+        local hinted = "/dev/ttyUSB" .. tostring(mod.at_port)
+        if file_exists(hinted) then detected = hinted end
     end
+    detected = detected or find_modem_device()
+    if not detected then return end
+
+    os.execute("logger -t VWRT_POLLER 'Invalid/Missing device config (" .. current_dev .. "). Auto-fixing to: " .. detected .. "'")
+    os.execute("uci set network.5G.device='" .. detected .. "' && uci commit network && /etc/init.d/network reload")
+    os.execute("sleep 5")
 end
 
 
@@ -631,7 +647,8 @@ function get_fm350_port()
     return "/dev/ttyUSB3"
 end
 
-local fm350_parser = require("services.parsers.fm350_at")
+local fm350_parser   = require("services.parsers.fm350_at")
+local quectel_parser = require("services.parsers.quectel_at")
 
 function main()
     -- Restore LED Config
@@ -882,27 +899,55 @@ function main()
                              os.execute("sleep 2")
                         end
 
-                                -- 1. Signal / Cell Info 
-                        local combined_raw = exec_at_tty(port, "AT+GTCCINFO?;+GTCAINFO?;+GTSENRDTEMP=1;+CSQ")
-                        local s1 = fm350_parser.parse_all_signal(combined_raw)
-                        
-                        if s1.full_mode then data_modem.mode = s1.full_mode end
-                        if s1.rsrp then data_modem.rsrp = s1.rsrp end
-                        if s1.rsrq then data_modem.rsrq = s1.rsrq end
-                        if s1.sinr then data_modem.sinr = s1.sinr end
+                                -- 1. Signal / Cell Info — branch by detected modem vendor
+                                --    so we issue the right AT commands and parse the right format.
+                        local _vendor = (mod and mod.vendor) or "Fibocom"
+                        local combined_raw
 
-                        -- 2. Temp
-                        local temp = fm350_parser.parse_temp(combined_raw)
-                        if temp then data_modem.mtemp = temp end
+                        if _vendor == "Quectel" then
+                            -- Quectel RM5xx / EC25 / EM12 / RG500U syntax
+                            combined_raw = exec_at_tty(port,
+                                'AT+QENG="servingcell";+QCAINFO;+QTEMP;+CSQ')
+                            local qe = quectel_parser.parse_qeng(combined_raw)    or {}
+                            local qa = quectel_parser.parse_qcainfo(combined_raw) or {}
+                            local mode_str = quectel_parser.format_mode(qe, qa)
+                            if mode_str then data_modem.mode = mode_str end
+                            if qe.rsrp then data_modem.rsrp = tostring(qe.rsrp) end
+                            if qe.rsrq then data_modem.rsrq = tostring(qe.rsrq) end
+                            if qe.sinr then data_modem.sinr = tostring(qe.sinr) end
+                            if qe.rssi then data_modem.rssi = tostring(qe.rssi) end
+                            if qe.cell_id then data_modem.cell_id = qe.cell_id end
+                            -- Temperature from QTEMP
+                            local qtemp = quectel_parser.parse_qtemp(combined_raw)
+                            if qtemp then data_modem.mtemp = tostring(qtemp) .. " &deg;C" end
+                            -- Signal percent: prefer QENG RSRP-derived (more accurate
+                            -- than CSQ on 5G NSA where CSQ only sees LTE anchor)
+                            if qe.rsrp then
+                                data_modem.signal = tostring(quectel_parser.rsrp_to_percent(qe.rsrp))
+                            end
+                        else
+                            -- FM350 / DW5821e legacy path
+                            combined_raw = exec_at_tty(port,
+                                "AT+GTCCINFO?;+GTCAINFO?;+GTSENRDTEMP=1;+CSQ")
+                            local s1 = fm350_parser.parse_all_signal(combined_raw)
+                            if s1.full_mode then data_modem.mode = s1.full_mode end
+                            if s1.rsrp then data_modem.rsrp = s1.rsrp end
+                            if s1.rsrq then data_modem.rsrq = s1.rsrq end
+                            if s1.sinr then data_modem.sinr = s1.sinr end
+                            local temp = fm350_parser.parse_temp(combined_raw)
+                            if temp then data_modem.mtemp = temp end
+                        end
 
-                        -- 3. Signal Strength & RSSI
-                        local csq_raw = combined_raw
-                        if csq_raw then
-                            local csq = csq_raw:match("%+CSQ:%s*(%d+),")
+                        -- CSQ fallback (applies to both vendors when RSRP-based
+                        -- signal didn't get set above)
+                        if combined_raw and (data_modem.signal == "0" or not data_modem.signal) then
+                            local csq = combined_raw:match("%+CSQ:%s*(%d+),")
                             if csq then
                                 local r = tonumber(csq)
                                 if r and r ~= 99 then
-                                    data_modem.rssi = tostring(2 * r - 113)
+                                    if not data_modem.rssi or data_modem.rssi == "-" then
+                                        data_modem.rssi = tostring(2 * r - 113)
+                                    end
                                     data_modem.signal = tostring(math.floor((r / 31) * 100))
                                 end
                             end
