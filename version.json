@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.10",
+        "version": "1.0.11",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "Fix lỗi 502 Bad Gateway của endpoint /cgi-bin/adguard/info.\n- Bug: tonumber(exec(cmd):gsub(...)) — gsub trả về 2 giá trị (string + count), tonumber coi count là 'base' rồi crash với 'bad argument #2 to tonumber (base out of range)'.\n- Sửa: bọc gsub trong cặp () để giới hạn về 1 giá trị: tonumber((s:gsub(...))).\n- Áp dụng cho cả /cgi-bin/adguard/info (2 chỗ) và /cgi-bin/adguard/setauth (1 chỗ).\n- Sau update, card AGH sẽ load đúng — hiển thị 'CẦN AUTH' (form nhập user/pass) hoặc stats trực tiếp nếu AGH cho phép no-auth."
+        "log": "Hỗ trợ qmodem + auto-probe AT port — nhận card 4G/5G bất kỳ.\n\nAT command channel — exec_at_tty() giờ ưu tiên:\n1. qmodem CLI (/usr/bin/qmodem hoặc qmodem.sh) — Fudy/GL.iNet/FUjr-QModem.\n2. sms_tool — standard package.\n3. at_cmd.sh — local fallback.\n\nAT port detection — get_fm350_port() giờ thử theo thứ tự:\n1. Đọc UCI qmodem.modem.at_port (nếu cài qmodem).\n2. modem_db hint theo USB VID:PID (Quectel→USB2, FM350→USB3, ...).\n3. UCI proto=atc device.\n4. Auto-probe: gửi 'AT' qua từng /dev/ttyUSB* xem cái nào trả OK, cache.\n5. /dev/ttyUSB3 fallback cuối cùng.\n\nSMS driver (cgi-bin/drivers/fm350.lua) cũng dùng cùng logic — phối hợp với poller.\n\nKết quả: hoạt động với mọi card 4G/5G thông dụng (FM350, RM5xx, EC25, EM7565, DW5821e, SIM8200, ME906...) bất kể có qmodem hay không."
     }
 }

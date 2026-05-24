@@ -73,17 +73,43 @@ function log(msg)
     os.execute("logger -t VWRT_POLLER '" .. tostring(msg) .. "'")
 end
 
+-- Send an AT command to the modem. Tries multiple channels in order of
+-- preference so the poller works on any common OpenWrt setup:
+--
+--   1. qmodem (custom firmware tool — Fudy / GL.iNet / FUjr/QModem etc).
+--      When installed, qmodem holds the AT port exclusively so direct
+--      access fails. The wrapper handles port discovery internally.
+--   2. sms_tool — standard package, fastest and most reliable when the
+--      port is free.
+--   3. at_cmd.sh — local shell wrapper using stty/cat (last resort).
 function exec_at_tty(device, cmd)
     if not cmd or cmd == "" then return nil end
-    
-    -- Try sms_tool first (very reliable on this system)
-    local res = exec("/usr/bin/sms_tool -d " .. device .. " at '" .. cmd .. "' 2>/dev/null")
-    if res and res ~= "" and not res:find("timeout") then 
-        return res 
+
+    -- Shell-escape the command for safe embedding in single-quoted shell args.
+    local safe_cmd = (cmd or ""):gsub("'", "'\\''")
+
+    -- 1. qmodem CLI — accept several common binary names.
+    for _, bin in ipairs({"/usr/bin/qmodem", "/usr/sbin/qmodem", "/usr/bin/qmodem.sh"}) do
+        if file_exists(bin) then
+            -- qmodem syntax variations seen in the wild:
+            --   qmodem at "AT+CGMM"
+            --   qmodem.sh at "AT+CGMM"
+            -- Both write the response to stdout and exit cleanly.
+            local res = exec(string.format("%s at '%s' 2>/dev/null", bin, safe_cmd))
+            if res and res ~= "" and not res:lower():find("error") then
+                return res
+            end
+        end
     end
 
-    -- Fallback to shell script
-    local sh = string.format("/www/vwrt/services/at_cmd.sh %s '%s' 2>/dev/null", device, cmd)
+    -- 2. sms_tool (standard package)
+    local res = exec("/usr/bin/sms_tool -d " .. device .. " at '" .. safe_cmd .. "' 2>/dev/null")
+    if res and res ~= "" and not res:find("timeout") then
+        return res
+    end
+
+    -- 3. Local shell fallback
+    local sh = string.format("/www/vwrt/services/at_cmd.sh %s '%s' 2>/dev/null", device, safe_cmd)
     return exec(sh)
 end
 
@@ -619,31 +645,88 @@ function is_atc_mode()
     return (iface ~= nil)
 end
 
--- Get configured AT port for FM350
+-- Read AT port from the `qmodem` package's UCI config, if installed.
+-- qmodem (FUjr/QModem, GL.iNet builds, Fudy) holds the AT port and exposes
+-- the path through one of several conventions. Try all of them.
+local function get_qmodem_at_port()
+    -- 1. UCI: qmodem.modem.at_port='/dev/ttyUSB2' (or .device, .port)
+    local uci_out = exec("uci -q show qmodem 2>/dev/null")
+    if uci_out and uci_out ~= "" then
+        local p = uci_out:match("at_port='([^']+)'")
+                 or uci_out:match("modem%.[^=]-%.device='(/dev/[^']+)'")
+                 or uci_out:match("port='(/dev/[^']+)'")
+        if p and file_exists(p) then return p end
+    end
+
+    -- 2. Config files
+    for _, path in ipairs({"/etc/qmodem/modem.conf", "/etc/qmodem/config",
+                            "/var/qmodem/at_port", "/tmp/qmodem.port"}) do
+        local content = read_file(path)
+        if content then
+            local p = content:match("at_port[=:%s]+(/dev/[%w%d]+)")
+                      or content:match("^(/dev/[%w%d]+)")
+            if p and file_exists(p) then return p end
+        end
+    end
+    return nil
+end
+
+-- Auto-probe each /dev/ttyUSB* — send AT and see which one returns "OK".
+-- This is the last-resort fallback when we don't know the modem at all.
+-- Cached in _G.PROBED_AT_PORT so we only do it once per poller lifetime.
+local function autoprobe_at_port()
+    if _G.PROBED_AT_PORT and file_exists(_G.PROBED_AT_PORT) then
+        return _G.PROBED_AT_PORT
+    end
+    for _, idx in ipairs({0, 1, 2, 3, 4, 5}) do
+        local p = "/dev/ttyUSB" .. idx
+        if file_exists(p) then
+            -- Direct sms_tool probe with short timeout (skip the wrapper to
+            -- avoid recursing into qmodem which may not know the port yet)
+            local r = exec("/usr/bin/sms_tool -d " .. p .. " at 'AT' 2>/dev/null")
+            if r and r:find("OK") then
+                _G.PROBED_AT_PORT = p
+                os.execute("logger -t VWRT_POLLER 'Auto-probed AT port: " .. p .. "'")
+                return p
+            end
+        end
+    end
+    return nil
+end
+
+-- Get configured AT port for the attached modem. Priority order:
+--   1. qmodem config (if package installed — Fudy/GL.iNet style)
+--   2. modem_db's at_port hint based on USB VID:PID
+--   3. ATC-mode UCI network.<iface>.device
+--   4. Auto-probe by sending AT to each /dev/ttyUSB* until OK
+--   5. Hard-coded /dev/ttyUSB3 (FM350 default)
 function get_fm350_port()
-    -- Pick the AT port based on the detected modem family. Different chipsets
-    -- expose AT on different ttyUSB indexes:
-    --   FM350-GL / DW5821e / Sierra EM7565  → ttyUSB3
-    --   Quectel RM5xx / EC25 / EM12         → ttyUSB2
-    --   Fibocom L850/L860 / ZTE             → ttyUSB1
-    --   Huawei dongles                       → ttyUSB0
-    -- modem_db tells us the hint; we still verify the device exists before
-    -- returning it, and fall back to a probe if the hint is wrong.
+    -- 1. qmodem owns the port? Use its declared path.
+    local qport = get_qmodem_at_port()
+    if qport then return qport end
+
+    -- 2. modem_db hint (FM350→3, Quectel→2, etc)
     local mod = detect_modem_once()
     if mod and mod.at_port then
         local hinted = "/dev/ttyUSB" .. tostring(mod.at_port)
         if file_exists(hinted) then return hinted end
     end
 
-    -- Probe order: previous default first (for backward compat with FM350),
-    -- then descending so we hit the typical AT slot on most modems.
+    -- 3. ATC-mode UCI device
+    local _, dev = find_atc_interface()
+    if dev and dev ~= "" and dev ~= "nil" and file_exists(dev) then
+        return dev
+    end
+
+    -- 4. Auto-probe — works for any modem responding to plain AT.
+    local probed = autoprobe_at_port()
+    if probed then return probed end
+
+    -- 5. Descend through the usual indices as last resort.
     for _, idx in ipairs({3, 2, 1, 0}) do
         local p = "/dev/ttyUSB" .. idx
         if file_exists(p) then return p end
     end
-
-    local _, dev = find_atc_interface()
-    if dev and dev ~= "" and dev ~= "nil" then return dev end
     return "/dev/ttyUSB3"
 end
 

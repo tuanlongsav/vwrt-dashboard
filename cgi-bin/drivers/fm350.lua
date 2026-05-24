@@ -82,10 +82,44 @@ local function release_lock()
     os.remove(LOCK_FILE)
 end
 
--- Helper: Get configured AT port dynamic
+-- Helper: Get configured AT port dynamic. Mirrors mobile_poller.lua's
+-- get_fm350_port priority so the SMS driver and the poller agree on which
+-- /dev/ttyUSB* to talk to.
 local function get_fm350_port(purpose)
-    -- SINGLE PORT STRATEGY (FALLBACK)
-    -- ttyUSB1/2 are unresponsive. We must use ttyUSB3 for everything.
+    -- 1. qmodem package (Fudy / GL.iNet / FUjr-QModem)
+    --    Reads the port the user configured in the qmodem UI.
+    local function check_file(p) local f = io.open(p, "r"); if f then f:close(); return true end return false end
+    local function shell(cmd)
+        local h = io.popen(cmd .. " 2>/dev/null")
+        if not h then return "" end
+        local s = h:read("*a") or ""; h:close(); return s
+    end
+
+    local uci_out = shell("uci -q show qmodem")
+    if uci_out ~= "" then
+        local p = uci_out:match("at_port='([^']+)'")
+                 or uci_out:match("modem%.[^=]-%.device='(/dev/[^']+)'")
+                 or uci_out:match("port='(/dev/[^']+)'")
+        if p and check_file(p) then return p end
+    end
+
+    -- 2. Try modem-family hints (Quectel→ttyUSB2, FM350→ttyUSB3, …) by
+    --    asking lib.modem_db. Wrapped in pcall so the SMS driver still
+    --    works if modem_db isn't present for any reason.
+    local ok, mdb = pcall(require, "lib.modem_db")
+    if ok and mdb and mdb.scan_usb then
+        local mod = mdb.scan_usb()
+        if mod and mod.at_port then
+            local hinted = "/dev/ttyUSB" .. tostring(mod.at_port)
+            if check_file(hinted) then return hinted end
+        end
+    end
+
+    -- 3. Fallback to the legacy /dev/ttyUSB3 default (FM350 standard slot)
+    for _, idx in ipairs({3, 2, 1, 0}) do
+        local p = "/dev/ttyUSB" .. idx
+        if check_file(p) then return p end
+    end
     return "/dev/ttyUSB3"
 end
 
