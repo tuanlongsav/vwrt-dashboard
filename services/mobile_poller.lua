@@ -5,9 +5,26 @@ local cjson = require "cjson"
 package.path = "/www/vwrt/?.lua;" .. package.path
 
 local constants = require "lib.constants"
+local modem_db  = require "lib.modem_db"
 local CACHE_FILE = constants.PATHS.MOBILE_CACHE
 local TEMP_FILE = constants.PATHS.MOBILE_CACHE_TEMP
 local LOCK_FILE = "/tmp/modem_at.lock"
+
+-- Cache of currently attached modem (set once at boot, kept for the poller
+-- lifetime). Used to populate manufacturer/model dynamically instead of the
+-- hard-coded "Fibocom FM350-GL" default in the FM350/ATC path.
+_G.DETECTED_MODEM = _G.DETECTED_MODEM or nil
+
+local function detect_modem_once()
+    if _G.DETECTED_MODEM then return _G.DETECTED_MODEM end
+    local ok, entry = pcall(modem_db.scan_usb)
+    if ok and entry then
+        _G.DETECTED_MODEM = entry
+        os.execute("logger -t VWRT_POLLER 'Detected modem: " .. entry.vendor .. " " .. entry.model .. " (" .. entry.id .. ")'")
+        return entry
+    end
+    return nil
+end
 
 -- Lock helpers (Synced with fm350.lua)
 function acquire_lock()
@@ -749,14 +766,20 @@ function main()
             if is_fm350 then
                 -- === PATH 1: FM350 (ATC Protocol) ===
                 local port = get_fm350_port()
-                
-                -- Initialize data_modem with defaults
+
+                -- Detect actual modem hardware so dashboard shows real model
+                -- (Quectel/Sierra/Telit/SimCom/Huawei/Dell/...) instead of
+                -- always saying "Fibocom FM350-GL".
+                local mod = detect_modem_once() or {}
+
                 data_modem = {
-                    manufacturer="Fibocom", model="FM350-GL", iface="eth2", 
-                    mtemp="-", rsrp="-", rsrq="-", sinr="-", rssi="-",
-                    state="connected", mode="Unknown", signal="0",
-                    operator_name="-", imei="-", firmware="-",
-                    wan_ip="Unknown"
+                    manufacturer = mod.vendor or "Fibocom",
+                    model        = mod.model  or "FM350-GL",
+                    iface        = "eth2",
+                    mtemp = "-", rsrp = "-", rsrq = "-", sinr = "-", rssi = "-",
+                    state = "connected", mode = "Unknown", signal = "0",
+                    operator_name = "-", imei = "-", firmware = "-",
+                    wan_ip = "Unknown",
                 }
 
                 -- Get Real-time Interface Status

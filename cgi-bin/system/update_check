@@ -2,7 +2,10 @@
 
 local cjson = require "cjson"
 
-local UPDATE_URL = "https://raw.githubusercontent.com/vietter99/vwrtdashbroad/refs/heads/main/version.json"
+-- Point at THIS fork — not the upstream — so OTA updates pull our patched
+-- code (audit fixes, installer, sig-bypass, modem_db) instead of being
+-- overwritten by upstream's release cycle.
+local UPDATE_URL = "https://raw.githubusercontent.com/tuanlongsav/vwrt-dashboard/main/version.json"
 
 local LOCAL_VER_FILE = "/www/vwrt/version.json"
 

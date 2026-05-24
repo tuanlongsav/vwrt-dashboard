@@ -1,6 +1,21 @@
 #!/usr/bin/lua
+--
+-- /cgi-bin/mobile/network — list active and configured network interfaces
+--
+-- Returns JSON array of interfaces grouped/colored by role:
+--   LAN BRIDGE (green), WAN PORT (blue), VPN/WireGuard (purple),
+--   MOBILE 4G/5G (orange), other (blue).
+--
+-- Differences vs previous version:
+--   * Includes mobile interfaces even when not yet UP (cellular often takes
+--     30-60s to dial; was previously hidden during that window, giving the
+--     impression of "không nhận thông tin tình trạng mạng").
+--   * Recognises modem protocols: wwan / qmi / mbim / ncm / atc / modemmanager.
+--   * Annotates state (up/down) and proto so the dashboard can render
+--     "connecting" badges.
+--
 
-local ubus = require "ubus"
+local ubus  = require "ubus"
 local cjson = require "cjson"
 
 local conn = ubus.connect()
@@ -9,15 +24,20 @@ if not conn then
     return
 end
 
+-- proto values that mean "this is a mobile/cellular interface"
+local MOBILE_PROTOS = {
+    wwan = true, qmi = true, mbim = true, ncm = true, atc = true,
+    modemmanager = true, ["3g"] = true, ppp = true,
+}
+
 local dump = conn:call("network.interface", "dump", {})
 local interfaces_map = {}
 
 if dump and dump.interface then
     for _, iface in ipairs(dump.interface) do
-        if iface.up and iface.interface ~= "loopback" then
-            
-            local dev_name = iface.l3_device or iface.device
-            
+        if iface.interface ~= "loopback" then
+            local dev_name = iface.l3_device or iface.device or ("(" .. iface.interface .. ")")
+
             local v4_list = iface["ipv4-address"]
             local v4_str = "--"
             if v4_list and #v4_list > 0 then
@@ -35,13 +55,33 @@ if dump and dump.interface then
                 end
             end
 
-            if dev_name and (v4_str ~= "--" or v6_str ~= "--") then
-                interfaces_map[dev_name] = {
-                    name = dev_name,
-                    label = iface.interface:upper(),
-                    ipv4 = v4_str,
-                    ipv6 = v6_str,
-                    proto = iface.proto
+            local proto    = iface.proto or "-"
+            local is_mobile = MOBILE_PROTOS[proto] or false
+            local has_addr  = (v4_str ~= "--") or (v6_str ~= "--")
+
+            -- Show interface if:
+            --   it is up AND has an address, OR
+            --   it is a mobile interface (always show, even pre-dial), OR
+            --   it is up (even without address yet)
+            local should_show = (iface.up and has_addr) or is_mobile or iface.up
+
+            if should_show then
+                -- Use device name as key, but allow multiple mobile ifaces with same dev
+                -- by appending interface name when conflict
+                local key = dev_name
+                if interfaces_map[key] then
+                    key = dev_name .. "/" .. iface.interface
+                end
+
+                interfaces_map[key] = {
+                    name      = dev_name,
+                    label     = iface.interface:upper(),
+                    ipv4      = v4_str,
+                    ipv6      = v6_str,
+                    proto     = proto,
+                    is_mobile = is_mobile,
+                    up        = iface.up and true or false,
+                    pending   = iface.pending and true or false,
                 }
             end
         end
@@ -52,37 +92,47 @@ local dev_stats = conn:call("network.device", "status", {}) or {}
 
 local final_list = {}
 
-for dev_name, info in pairs(interfaces_map) do
-    local stats = dev_stats[dev_name] or {}
+for _, info in pairs(interfaces_map) do
+    local stats     = dev_stats[info.name] or {}
     local stat_data = stats.statistics or {}
-    
-    local rx = stat_data.rx_bytes or 0
-    local tx = stat_data.tx_bytes or 0
+
+    local rx  = stat_data.rx_bytes or 0
+    local tx  = stat_data.tx_bytes or 0
     local mac = stats.macaddr or "00:00:00:00:00:00"
 
-    local color = "tag-blue" 
-    
-    if info.label == "LAN" or dev_name:find("br%-") then
+    local color = "tag-blue"
+
+    if info.is_mobile then
+        color = "tag-orange"
+        -- Tag with network generation if recognizable
+        if not info.label:match("4G") and not info.label:match("5G") then
+            info.label = info.label .. " (" .. info.proto:upper() .. ")"
+        end
+    elseif info.label == "LAN" or info.name:find("br%-") then
         color = "tag-green"
         if info.label == "LAN" then info.label = "LAN BRIDGE" end
-    elseif info.label:find("VPN") or dev_name:find("tun") or dev_name:find("wg") then
-        color = "tag-purple" -- Màu tím cho VPN/WireGuard
+    elseif info.label:find("VPN") or info.name:find("tun") or info.name:find("wg") then
+        color = "tag-purple"
     elseif info.label == "WAN" or info.label == "WAN6" then
         info.label = "WAN PORT"
     end
 
+    -- Annotate state for the dashboard
+    local state = info.up and "up" or (info.pending and "pending" or "down")
+
     table.insert(final_list, {
-        name = dev_name,
-        label = info.label,
-        color = color,
-        mac = mac:upper(),
-        rx = rx,
-        tx = tx,
-        ipv4 = info.ipv4,
-        ipv6 = info.ipv6
+        name   = info.name,
+        label  = info.label,
+        color  = color,
+        mac    = mac:upper(),
+        rx     = rx,
+        tx     = tx,
+        ipv4   = info.ipv4,
+        ipv6   = info.ipv6,
+        proto  = info.proto,
+        state  = state,
     })
 end
 
--- Trả kết quả JSON
 print("Content-type: application/json\n\n")
 print(cjson.encode(final_list))

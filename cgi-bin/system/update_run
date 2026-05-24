@@ -46,7 +46,7 @@ local function run_update()
     local data = input_data
     local update_type = data.type or "dashboard"
     -- Default to User's GitHub Main Branch Archive
-    local url = data.url or "https://github.com/vietter99/vwrtdashbroad/archive/refs/heads/main.tar.gz"
+    local url = data.url or "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz"
     local version = data.version or "latest"
     
     local log_file = "/tmp/update_debug.log"
