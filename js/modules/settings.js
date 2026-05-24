@@ -54,7 +54,7 @@ const SettingsModule = {
                 </div>
 
                 <!-- 2. QUICK ACTIONS GRID -->
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
                     <!-- Restart Mobile -->
                     <div class="action-card" onclick="SettingsModule.restartMobileService()" style="background:var(--bg-card); padding:12px; border-radius:12px; border:1px solid var(--border-color); cursor:pointer; transition:0.2s; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;">
                         <div style="width:36px; height:36px; background:rgba(49, 130, 206, 0.1); border-radius:10px; color:#3182ce; display:flex; align-items:center; justify-content:center;">
@@ -71,20 +71,44 @@ const SettingsModule = {
                         <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Đổi Mật Khẩu</span>
                     </div>
 
+                    <!-- LED — moved from sidebar -->
+                    <div class="action-card" onclick="SettingsModule.openLedModal()" style="background:var(--bg-card); padding:12px; border-radius:12px; border:1px solid var(--border-color); cursor:pointer; transition:0.2s; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;">
+                        <div style="width:36px; height:36px; background:rgba(236, 201, 75, 0.15); border-radius:10px; color:#d69e2e; display:flex; align-items:center; justify-content:center;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line></svg>
+                        </div>
+                        <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Đèn LED</span>
+                    </div>
+
+                    <!-- Reboot Schedule — moved from sidebar -->
+                    <div class="action-card" onclick="SettingsModule.openRebootSchedule()" style="background:var(--bg-card); padding:12px; border-radius:12px; border:1px solid var(--border-color); cursor:pointer; transition:0.2s; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;">
+                        <div style="width:36px; height:36px; background:rgba(56, 178, 172, 0.15); border-radius:10px; color:#319795; display:flex; align-items:center; justify-content:center;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        </div>
+                        <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Lịch Reboot</span>
+                    </div>
+
+                    <!-- Terminal — moved from sidebar -->
+                    <div class="action-card" onclick="SettingsModule.openTerminal()" style="background:var(--bg-card); padding:12px; border-radius:12px; border:1px solid var(--border-color); cursor:pointer; transition:0.2s; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;">
+                        <div style="width:36px; height:36px; background:rgba(45, 55, 72, 0.15); border-radius:10px; color:#2d3748; display:flex; align-items:center; justify-content:center;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                        </div>
+                        <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Terminal</span>
+                    </div>
+
                     <!-- LuCI -->
                     <a href="${luciPath}" target="_blank" class="action-card" onclick="SettingsModule.closePopup()" style="text-decoration:none; background:var(--bg-card); padding:12px; border-radius:12px; border:1px solid var(--border-color); cursor:pointer; transition:0.2s; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;">
                         <div style="width:36px; height:36px; background:rgba(74, 85, 104, 0.1); border-radius:10px; color:var(--text-sub); display:flex; align-items:center; justify-content:center;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                         </div>
-                        <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Cài đặt nâng cao</span>
+                        <span style="font-size:13px; font-weight:600; color:var(--text-sub);">LuCI nâng cao</span>
                     </a>
 
-                    <!-- Reboot -->
+                    <!-- Reboot Router -->
                     <div class="action-card" onclick="SettingsModule.confirmReboot()" style="background:var(--bg-card); padding:12px; border-radius:12px; border:1px solid var(--border-color); cursor:pointer; transition:0.2s; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;">
                         <div style="width:36px; height:36px; background:rgba(237, 137, 54, 0.1); border-radius:10px; color:#ed8936; display:flex; align-items:center; justify-content:center;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
                         </div>
-                        <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Restart</span>
+                        <span style="font-size:13px; font-weight:600; color:var(--text-sub);">Khởi động lại</span>
                     </div>
                 </div>
 
@@ -233,6 +257,50 @@ const SettingsModule = {
     closePopup: function() {
         const popup = document.getElementById('settings-popup-content');
         if (popup) popup.classList.add('hidden');
+    },
+
+    // Tools moved from sidebar into this popup
+    openLedModal: function() {
+        this.closePopup();
+        if (typeof LedModule !== 'undefined') LedModule.showModal();
+        else if (typeof Toast !== 'undefined') Toast.show("Module LED chưa load", "error");
+    },
+
+    openRebootSchedule: function() {
+        this.closePopup();
+        if (typeof RebootScheduleModule !== 'undefined') RebootScheduleModule.showModal();
+        else if (typeof Toast !== 'undefined') Toast.show("Module Reboot Schedule chưa load", "error");
+    },
+
+    openTerminal: function() {
+        this.closePopup();
+        if (typeof Modal === 'undefined') return;
+
+        // Terminal lives on port 7681 (ttyd default on most OpenWrt builds).
+        Modal.show({
+            title: "Terminal",
+            content: `<div style="width:100%; height:75vh;">
+                        <iframe src="http://${window.location.hostname}:7681" style="width:100%; height:100%; border:none; background:#000;"></iframe>
+                      </div>`,
+            showCancel: false,
+            showIcon: false,
+            confirmText: "Đóng",
+            onConfirm: () => {},
+        });
+
+        // Dark + compact styling
+        setTimeout(() => {
+            const mBox = document.querySelector('.modal-box');
+            if (mBox) {
+                mBox.style.maxWidth   = "900px";
+                mBox.style.width      = "95%";
+                mBox.style.background = "#1a1b26";
+                mBox.style.color      = "#c0caf5";
+                mBox.style.padding    = "15px";
+                const title = mBox.querySelector('h3');
+                if (title) { title.style.color = "#c0caf5"; title.style.marginTop = "0"; }
+            }
+        }, 50);
     },
 
     confirmReboot: function() {

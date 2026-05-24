@@ -16,7 +16,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if(typeof ClientsModule !== 'undefined') ClientsModule.init();
 
     if(typeof ThemeModule !== 'undefined') {
-        ThemeModule.init(); 
+        ThemeModule.init();
+    }
+
+    // Utility cards (Network status / MultiWAN / AdBlock / Tailscale) —
+    // surfaced on dashboard instead of hidden in sidebar.
+    if(typeof UtilCards !== 'undefined') {
+        UtilCards.init();
     }
 
     const btnLogout = document.getElementById('btnTopLogout');

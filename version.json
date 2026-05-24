@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.4",
+        "version": "1.0.5",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "Fix model modem hiển thị sai (RM520 ra RM502).\n- Vấn đề: Quectel RM5xx series chia sẻ USB PID 2c7c:0801 ở RNDIS mode, USB scan không phân biệt được model cụ thể.\n- Sửa: query AT+CGMM (modem tự khai) để override USB-detected model. Authoritative source.\n- Mở rộng AT_FALLBACK trong modem_db: pattern riêng cho RM500Q, RM502Q, RM510Q, RM520N, RM530N (specific) đặt trước RM5xx (generic).\n- Thêm AT+QGMR cho firmware Quectel (vd 'RM520NGLAAR03A03M4G_A0.303.A0.303').\n- Cache model verified — chỉ query 1 lần, không tăng load."
+        "log": "UI: Đưa tiện ích từ sidebar ra Dashboard + dọn sidebar.\n- Dashboard có thêm 4 card mới (auto-refresh 10s):\n  • Trạng thái mạng (danh sách interface với IP + state)\n  • MultiWAN (members + status online/offline)\n  • Chặn quảng cáo: 2 nút song song — AdBlock Fast (UCI) và AdGuard Home (DNS-level, mở :3000)\n  • Tailscale VPN (IP + hostname + state)\n- Settings popup giờ chứa: Đèn LED, Lịch Reboot, Terminal (trước ở sidebar).\n- Sidebar slim: chỉ giữ TỔNG QUAN (Dashboard + Trạng thái mạng).\n- Click vào card vẫn mở modal chi tiết của module hiện có."
     }
 }
