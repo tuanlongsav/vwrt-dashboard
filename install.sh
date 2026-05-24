@@ -133,23 +133,70 @@ check_prereqs() {
         die "/overlay has less than 2 MB free (got ${overlay_avail} KB). Free space first."
     fi
 
-    # Required runtime packages — install via opkg if missing
-    need_pkgs=""
-    command -v lua             >/dev/null 2>&1 || need_pkgs="$need_pkgs lua"
-    [ -f /usr/lib/lua/cjson.so ] || need_pkgs="$need_pkgs lua-cjson"
-    [ -d /usr/lib/lua/luci ]     || need_pkgs="$need_pkgs luci-base"
-    [ -f /usr/lib/lua/luci/jsonc.lua ] || need_pkgs="$need_pkgs luci-lib-jsonc"
-    command -v uhttpd          >/dev/null 2>&1 || need_pkgs="$need_pkgs uhttpd"
-    command -v wget            >/dev/null 2>&1 || need_pkgs="$need_pkgs wget-ssl"
+    # Test Lua modules by actually requiring them (works for static-linked builds too)
+    lua_has() {
+        # $1 = module name (e.g. "cjson", "luci.jsonc")
+        lua -e "require '$1'" >/dev/null 2>&1
+    }
 
-    if [ -n "$need_pkgs" ]; then
-        info "Installing missing packages:$need_pkgs"
-        opkg update >>"$LOG" 2>&1 || die "opkg update failed. Check internet."
-        # shellcheck disable=SC2086
-        opkg install $need_pkgs >>"$LOG" 2>&1 || die "opkg install failed:$need_pkgs"
-        ok "Packages installed."
+    # Required runtime packages — install via opkg only what's actually missing
+    need_pkgs=""
+    if ! command -v lua >/dev/null 2>&1; then
+        need_pkgs="$need_pkgs lua"
     else
-        ok "All required packages present."
+        # Lua present — check Lua modules functionally, not by file path
+        lua_has cjson      || need_pkgs="$need_pkgs lua-cjson"
+        lua_has luci.jsonc || need_pkgs="$need_pkgs luci-lib-jsonc"
+    fi
+    [ -d /usr/lib/lua/luci ]  || need_pkgs="$need_pkgs luci-base"
+    command -v uhttpd >/dev/null 2>&1 || need_pkgs="$need_pkgs uhttpd"
+    command -v wget   >/dev/null 2>&1 || need_pkgs="$need_pkgs wget-ssl"
+
+    if [ -n "$need_pkgs" ] && [ "${SKIP_DEPS:-0}" != "1" ]; then
+        info "Installing missing packages:$need_pkgs"
+
+        # Try opkg — log full output so user can diagnose
+        if ! opkg update >>"$LOG" 2>&1; then
+            warn "opkg update failed. Trying install anyway (may use cached lists)."
+        fi
+        # shellcheck disable=SC2086
+        if ! opkg install $need_pkgs >>"$LOG" 2>&1; then
+            # Show what failed and re-check whether the runtime is actually usable
+            tail -20 "$LOG" >&2
+            warn "opkg install failed. Re-checking if modules are usable anyway..."
+
+            still_missing=""
+            command -v lua >/dev/null 2>&1 || still_missing="$still_missing lua"
+            if command -v lua >/dev/null 2>&1; then
+                lua_has cjson      || still_missing="$still_missing lua-cjson"
+                lua_has luci.jsonc || still_missing="$still_missing luci-lib-jsonc"
+            fi
+            command -v uhttpd >/dev/null 2>&1 || still_missing="$still_missing uhttpd"
+            command -v wget   >/dev/null 2>&1 || still_missing="$still_missing wget"
+
+            if [ -n "$still_missing" ]; then
+                err "Required components still missing:$still_missing"
+                err "Possible causes:"
+                err "  • Firmware doesn't expose OpenWrt opkg repo (custom firmware Fudy/GL.iNet/etc.)"
+                err "  • /etc/opkg/distfeeds.conf has invalid URLs"
+                err "  • No internet on router right now"
+                err ""
+                err "Workarounds:"
+                err "  1. Install manually with the firmware's own tool, then rerun:"
+                err "       SKIP_DEPS=1 sh install.sh install"
+                err "  2. Check sources:  cat /etc/opkg/distfeeds.conf"
+                err "  3. Or download .ipk manually and: opkg install /tmp/<pkg>.ipk"
+                die "Abort."
+            else
+                warn "Some opkg installs failed but all modules are usable. Continuing."
+            fi
+        else
+            ok "Packages installed."
+        fi
+    elif [ -n "$need_pkgs" ] && [ "${SKIP_DEPS:-0}" = "1" ]; then
+        warn "SKIP_DEPS=1 set — not installing:$need_pkgs (you said it's fine)"
+    else
+        ok "All required Lua modules and tools present."
     fi
 
     # Warn (don't fail) about modem driver
@@ -438,6 +485,10 @@ Usage:
 
 Env vars:
   SKIP_BACKUP=1       Skip pre-install backup (save RAM on tiny routers)
+  SKIP_DEPS=1         Skip 'opkg install' — use only if you already installed
+                      lua / lua-cjson / luci-lib-jsonc manually (e.g. via the
+                      firmware's own package manager on custom builds like
+                      Fudy / GL.iNet that don't expose the OpenWrt repo).
 EOF
         ;;
     *)

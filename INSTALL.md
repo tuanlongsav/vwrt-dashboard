@@ -104,6 +104,20 @@ sh install.sh install
 SKIP_BACKUP=1 sh install.sh install
 ```
 
+### Bỏ qua opkg install (firmware custom: Fudy, GL.iNet, ImmortalWrt-fork...)
+
+Một số firmware fork OpenWrt **không cho phép truy cập repo opkg chính thức** — `opkg install lua-cjson` sẽ fail dù module thực ra đã có sẵn (built statically vào lua binary). Khi đó:
+
+```sh
+# 1. Test module có sẵn không
+lua -e 'require "cjson"; require "luci.jsonc"; print("OK")'
+
+# 2. Nếu in "OK" → bỏ qua opkg install
+SKIP_DEPS=1 wget -O- https://raw.githubusercontent.com/tuanlongsav/vwrt-dashboard/main/install.sh | sh
+```
+
+Hoặc nếu module thiếu thật, dùng package manager của firmware (vd Fudy có `fudypkg`, GL.iNet có web UI install) cài tay 2 package này rồi rerun với `SKIP_DEPS=1`.
+
 ---
 
 ## 🔐 Đăng nhập lần đầu
