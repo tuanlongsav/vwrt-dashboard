@@ -1,10 +1,18 @@
 <!doctype html>
-<html lang="vi">
+<!--
+  data-variant + data-theme drive css/design.css's variant + theme system.
+  Persisted by ThemeModule (js/modules/theme.js) to localStorage so the
+  user's choice survives reloads. Variants: noc (terminal monospace) /
+  apple (clean rounded). Themes: dark / light.
+  Defaults below match css/design.css's :root.
+-->
+<html lang="vi" data-variant="noc" data-theme="dark">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>VWRT | Dashboard</title>
+        <title>VWRT · Router Admin Panel</title>
         <link rel="stylesheet" href="css/fonts.css" />
+        <link rel="stylesheet" href="css/design.css" />
         <link rel="stylesheet" href="css/dashboard.css" />
         <link rel="stylesheet" href="css/toast.css" />
         <link rel="stylesheet" href="css/wifi.css" />

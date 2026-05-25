@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.11",
+        "version": "1.0.12",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "Hỗ trợ qmodem + auto-probe AT port — nhận card 4G/5G bất kỳ.\n\nAT command channel — exec_at_tty() giờ ưu tiên:\n1. qmodem CLI (/usr/bin/qmodem hoặc qmodem.sh) — Fudy/GL.iNet/FUjr-QModem.\n2. sms_tool — standard package.\n3. at_cmd.sh — local fallback.\n\nAT port detection — get_fm350_port() giờ thử theo thứ tự:\n1. Đọc UCI qmodem.modem.at_port (nếu cài qmodem).\n2. modem_db hint theo USB VID:PID (Quectel→USB2, FM350→USB3, ...).\n3. UCI proto=atc device.\n4. Auto-probe: gửi 'AT' qua từng /dev/ttyUSB* xem cái nào trả OK, cache.\n5. /dev/ttyUSB3 fallback cuối cùng.\n\nSMS driver (cgi-bin/drivers/fm350.lua) cũng dùng cùng logic — phối hợp với poller.\n\nKết quả: hoạt động với mọi card 4G/5G thông dụng (FM350, RM5xx, EC25, EM7565, DW5821e, SIM8200, ME906...) bất kể có qmodem hay không."
+        "log": "UI: tích hợp design system mới từ VWRT prototype (phase 1).\n\n- Bổ sung css/design.css (~780 dòng) — design tokens + 2 variant (NOC monospace / Apple clean) + dark/light theme dùng CSS variables.\n- Loại Google Fonts @import (router thường offline); dùng Noto Sans Display đã ship + system fallback cho monospace.\n- index.html (login): rewrite hoàn toàn theo design — brand mark, input có icon, button accent xanh ngọc, fonts mono cho footer.\n- dashboard.html: thêm <html data-variant data-theme> + load design.css (existing CSS giữ nguyên override).\n- theme.js: mở rộng — toggle cả data-variant lẫn data-theme, persist localStorage (key vwrt_variant + vwrt_theme).\n- Settings popup thêm section 'Giao diện' — 4 nút chọn NOC/Apple/Dark/Light, highlight active.\n- Phase 2 (rebuild dashboard layout với .app .sidebar .topbar) sẽ làm sau."
     }
 }

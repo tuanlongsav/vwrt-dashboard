@@ -112,7 +112,18 @@ const SettingsModule = {
                     </div>
                 </div>
 
-                <!-- 3. DANGER ZONE -->
+                <!-- 3. APPEARANCE (variant + theme picker) -->
+                <div style="margin-top:6px; padding:12px; background:var(--bg-card, var(--surface)); border:1px solid var(--border-color, var(--border)); border-radius:12px;">
+                    <div style="font-size:12px; font-weight:700; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">Giao diện</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                        <button onclick="SettingsModule.setVariant('noc')" id="settings-variant-noc" style="padding:10px; border:1px solid var(--border-color, var(--border)); background:var(--bg-body, var(--bg-2)); color:var(--text-main); border-radius:8px; cursor:pointer; font-weight:600; font-size:13px;">⌨ NOC (Terminal)</button>
+                        <button onclick="SettingsModule.setVariant('apple')" id="settings-variant-apple" style="padding:10px; border:1px solid var(--border-color, var(--border)); background:var(--bg-body, var(--bg-2)); color:var(--text-main); border-radius:8px; cursor:pointer; font-weight:600; font-size:13px;">🍎 Apple (Clean)</button>
+                        <button onclick="SettingsModule.setTheme('dark')" id="settings-theme-dark" style="padding:10px; border:1px solid var(--border-color, var(--border)); background:var(--bg-body, var(--bg-2)); color:var(--text-main); border-radius:8px; cursor:pointer; font-weight:600; font-size:13px;">🌙 Tối</button>
+                        <button onclick="SettingsModule.setTheme('light')" id="settings-theme-light" style="padding:10px; border:1px solid var(--border-color, var(--border)); background:var(--bg-body, var(--bg-2)); color:var(--text-main); border-radius:8px; cursor:pointer; font-weight:600; font-size:13px;">☀️ Sáng</button>
+                    </div>
+                </div>
+
+                <!-- 4. DANGER ZONE -->
                 <div onclick="SettingsModule.confirmReset()" style="margin-top:5px; background:rgba(229, 62, 62, 0.05); border:1px dashed var(--danger, #fc8181); border-radius:12px; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                     <span style="font-size:13px; font-weight:700; color:#e53e3e;">Khôi phục cài đặt gốc</span>
@@ -135,6 +146,9 @@ const SettingsModule = {
             const el = document.getElementById('cur-ver-text');
             if(el) el.innerText = `Dashboard v${v.dashboard.version}`;
         }).catch(()=>{});
+
+        // Highlight the currently-active variant + theme buttons
+        setTimeout(() => this._highlightAppearance(), 50);
 
         // Add hover effect via JS
         setTimeout(() => {
@@ -257,6 +271,31 @@ const SettingsModule = {
     closePopup: function() {
         const popup = document.getElementById('settings-popup-content');
         if (popup) popup.classList.add('hidden');
+    },
+
+    // Variant + theme picker — delegates to ThemeModule, then highlights the
+    // active button so the user sees their choice persisted.
+    setVariant: function (v) {
+        if (typeof ThemeModule !== 'undefined') ThemeModule.applyVariant(v);
+        this._highlightAppearance();
+    },
+    setTheme: function (t) {
+        if (typeof ThemeModule !== 'undefined') ThemeModule.applyTheme(t);
+        this._highlightAppearance();
+    },
+    _highlightAppearance: function () {
+        const variant = document.documentElement.getAttribute('data-variant') || 'noc';
+        const theme   = document.documentElement.getAttribute('data-theme')   || 'dark';
+        const setActive = (id, active) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.borderColor = active ? 'var(--accent, #00d9a6)' : 'var(--border-color, var(--border))';
+            el.style.background  = active ? 'rgba(0, 217, 166, 0.1)' : 'var(--bg-body, var(--bg-2))';
+        };
+        setActive('settings-variant-noc',   variant === 'noc');
+        setActive('settings-variant-apple', variant === 'apple');
+        setActive('settings-theme-dark',    theme === 'dark');
+        setActive('settings-theme-light',   theme === 'light');
     },
 
     // Tools moved from sidebar into this popup

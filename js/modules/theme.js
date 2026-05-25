@@ -1,28 +1,53 @@
+/**
+ * ThemeModule — controls the design system's two axes:
+ *   data-theme    = "dark" | "light"
+ *   data-variant  = "noc"  | "apple"
+ *
+ * Both attributes go on <html> and are picked up by css/design.css.
+ * Persisted to localStorage so the user's choice survives reloads.
+ */
 const ThemeModule = {
-    init: function() {
-        const savedTheme = localStorage.getItem('vwrt_theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        
-        this.updateIcon(savedTheme);
+
+    THEME_KEY:   'vwrt_theme',
+    VARIANT_KEY: 'vwrt_variant',
+
+    init: function () {
+        const theme   = localStorage.getItem(this.THEME_KEY)   || 'dark';
+        const variant = localStorage.getItem(this.VARIANT_KEY) || 'noc';
+
+        this.applyTheme(theme);
+        this.applyVariant(variant);
 
         const btn = document.getElementById('btn-theme-toggle');
-        if (btn) {
-            btn.addEventListener('click', () => this.toggle());
-        }
+        if (btn) btn.addEventListener('click', () => this.toggleTheme());
     },
 
-    toggle: function() {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        
-        document.documentElement.setAttribute('data-theme', next);
-        
-        localStorage.setItem('vwrt_theme', next);
-        
-        this.updateIcon(next);
+    // ---------- Theme (dark / light) ----------
+    applyTheme: function (theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem(this.THEME_KEY, theme);
+        this.updateIcon(theme);
     },
 
-    updateIcon: function(theme) {
+    toggleTheme: function () {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        this.applyTheme(current === 'dark' ? 'light' : 'dark');
+    },
+
+    // ---------- Variant (noc / apple) ----------
+    applyVariant: function (variant) {
+        if (variant !== 'noc' && variant !== 'apple') variant = 'noc';
+        document.documentElement.setAttribute('data-variant', variant);
+        localStorage.setItem(this.VARIANT_KEY, variant);
+    },
+
+    toggleVariant: function () {
+        const current = document.documentElement.getAttribute('data-variant') || 'noc';
+        this.applyVariant(current === 'noc' ? 'apple' : 'noc');
+    },
+
+    // Header sun/moon icon
+    updateIcon: function (theme) {
         const iconContainer = document.querySelector('#btn-theme-toggle .icon-btn');
         if (!iconContainer) return;
 
@@ -31,5 +56,10 @@ const ThemeModule = {
         } else {
             iconContainer.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
         }
-    }
+    },
 };
+
+// Backwards compat: some modules call ThemeModule.toggle()
+ThemeModule.toggle = ThemeModule.toggleTheme;
+
+window.ThemeModule = ThemeModule;
