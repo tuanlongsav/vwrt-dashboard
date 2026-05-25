@@ -183,3 +183,51 @@
     border: 1px solid var(--border) !important;
     box-shadow: var(--shadow) !important;
 }
+
+
+/* ─── 9. Phase 3 UI primitive styling ───────────────────────────────────── */
+
+/* StatCard — big value + tiny sparkline */
+.stat-card {
+    padding: 14px;
+}
+.stat-card .metric-value {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: var(--font-display);
+    line-height: 1.1;
+}
+.stat-card .metric-unit {
+    font-size: 13px;
+    margin-left: 4px;
+    color: var(--text-dim);
+}
+
+/* Mini — small label/value pair */
+.mini {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    text-align: center;
+}
+.mini .metric-label {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+}
+
+/* Live indicator pulse for stat cards */
+.dot.live {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse-live 1.5s ease-in-out infinite;
+}
+@keyframes pulse-live {
+    0%, 100% { opacity: 0.5; transform: scale(0.9); }
+    50%      { opacity: 1;   transform: scale(1.1); }
+}

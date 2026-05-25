@@ -67,31 +67,62 @@ const SystemModule = {
         }
 
         // --- 3. CPU ---
+        let smoothCpu = Math.round((data.cpu * 0.7) + (this.lastCpu * 0.3));
+        this.lastCpu = smoothCpu;
+        // Legacy progress bar (kept hidden in HTML for backward compat)
         const elCpuBar = document.getElementById('cpu-bar');
         if (elCpuBar) {
-            let smoothCpu = Math.round((data.cpu * 0.7) + (this.lastCpu * 0.3));
-            this.lastCpu = smoothCpu;
             elCpuBar.style.width = `${smoothCpu}%`;
-            document.getElementById('cpu-text').innerText = `${smoothCpu}%`;
+            const elCpuText = document.getElementById('cpu-text');
+            if (elCpuText) elCpuText.innerText = `${smoothCpu}%`;
+        }
+        // New: phase-3 gauge (SVG circular)
+        const elCpuGauge = document.getElementById('sys-gauge-cpu');
+        if (elCpuGauge && window.UI) {
+            elCpuGauge.innerHTML = UI.gauge(smoothCpu, {
+                color: 'var(--accent)', size: 90, thickness: 8, label: '',
+            });
         }
 
         // --- 4. RAM (Used / Total) ---
+        const ramPct = data.ram.percent;
+        const usedR = this.formatBytes(data.ram.used);
+        const totalR = this.formatBytes(data.ram.total);
+
         const elRamBar = document.getElementById('ram-bar');
         if (elRamBar) {
-            elRamBar.style.width = `${data.ram.percent}%`;
-            const usedStr = this.formatBytes(data.ram.used);
-            const totalStr = this.formatBytes(data.ram.total);
-            document.getElementById('ram-text').innerText = `${usedStr} / ${totalStr}`;
+            elRamBar.style.width = `${ramPct}%`;
+            const elRamText = document.getElementById('ram-text');
+            if (elRamText) elRamText.innerText = `${usedR} / ${totalR}`;
         }
+        const elRamGauge = document.getElementById('sys-gauge-ram');
+        if (elRamGauge && window.UI) {
+            elRamGauge.innerHTML = UI.gauge(ramPct, {
+                color: 'var(--info)', size: 90, thickness: 8, label: '',
+            });
+        }
+        const elRamDetail = document.getElementById('ram-text-detail');
+        if (elRamDetail) elRamDetail.innerText = `${usedR} / ${totalR}`;
 
         // --- 5. ROM (Used / Total) ---
+        const romPct = data.rom.percent;
+        const usedRo = this.formatBytes(data.rom.used);
+        const totalRo = this.formatBytes(data.rom.total);
+
         const elRomBar = document.getElementById('rom-bar');
         if (elRomBar) {
-            elRomBar.style.width = `${data.rom.percent}%`;
-            const usedStr = this.formatBytes(data.rom.used);
-            const totalStr = this.formatBytes(data.rom.total);
-            document.getElementById('rom-text').innerText = `${usedStr} / ${totalStr}`;
+            elRomBar.style.width = `${romPct}%`;
+            const elRomText = document.getElementById('rom-text');
+            if (elRomText) elRomText.innerText = `${usedRo} / ${totalRo}`;
         }
+        const elRomGauge = document.getElementById('sys-gauge-rom');
+        if (elRomGauge && window.UI) {
+            elRomGauge.innerHTML = UI.gauge(romPct, {
+                color: 'var(--warn)', size: 90, thickness: 8, label: '',
+            });
+        }
+        const elRomDetail = document.getElementById('rom-text-detail');
+        if (elRomDetail) elRomDetail.innerText = `${usedRo} / ${totalRo}`;
     },
 
     freeRam: function() {
