@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.15",
+        "version": "1.0.16",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "Hotfix layout: cards bị squish vào cột 232px sau phase 2.\n\nRoot cause: legacy dashboard.css có .sidebar { position: fixed; transform: translateX(-100%); width: 260px } — đây là hamburger drawer cũ. Khi phase 2 dùng class='sidebar' cho design grid, legacy CSS này đẩy sidebar mới off-screen → CSS grid mất 1 cột → main bị squish 232px.\n\nFix: override toàn bộ position/transform/width/box-shadow/z-index/backdrop của legacy .sidebar bằng !important trong design-bridge.css. Cũng ẩn legacy .overlay (drawer backdrop không còn dùng).\n\nSau update: layout shell hiện đầy đủ — sidebar trái 232px + main fill width còn lại."
+        "log": "Phase 4: áp dụng UI primitives lên 4 cards còn lại.\n\n- Modem card: SignalBars 0-5 cạnh tên nhà mạng (xanh/cam/đỏ theo RSRP qua UI.rsrpToBars), thay nút badge mode/type bằng UI.pill với tone (5G→ok, LTE→info, 3G→warn).\n- MultiWAN card: status badge dạng pill (online→ok, offline→bad, mixed→warn), mỗi row interface cũng dùng pill thay text màu.\n- Tailscale card: pill cho 'ĐÃ KẾT NỐI' / 'NGẮT'.\n- AdGuard card: setBadge() helper giờ ưu tiên UI.pill — BẬT (ok) / TẠM TẮT (warn) / CẦN AUTH (warn) / TẮT (bad) / CHƯA CÀI (bad).\n- Mọi pill dùng cùng tone system của design.css → tự retone khi đổi variant/theme.\n- design-bridge.css: thêm rules cho .tag/.net-tag containers + #mob-card-signal-bars.\n- Phase 4 done — toàn dashboard giờ thống nhất visual language của VWRT prototype."
     }
 }

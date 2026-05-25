@@ -255,3 +255,25 @@
     0%, 100% { opacity: 0.5; transform: scale(0.9); }
     50%      { opacity: 1;   transform: scale(1.1); }
 }
+
+
+/* ─── 10. Pill containers ────────────────────────────────────────────────── */
+/* When .util-*-status or .net-tag elements have UI.pill HTML injected they
+   bring their own background. Strip the container's legacy chip padding so
+   the pill doesn't get a double border. The JS sets background:transparent
+   inline already; this rule ensures consistent margins across cards. */
+.net-tag:has(.tag),
+[id^="util-"][id$="-status"]:has(.tag),
+[id^="util-"][id$="-status"] .tag {
+    line-height: 1;
+}
+.tag {
+    white-space: nowrap;
+}
+
+
+/* ─── 11. Modem signal bars hover ────────────────────────────────────────── */
+#mob-card-signal-bars {
+    display: inline-flex;
+    align-items: center;
+}

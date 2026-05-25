@@ -71,7 +71,18 @@ const UtilCards = {
                 }
 
                 const onlineCount = names.filter(n => (ifaces[n].status || '').toLowerCase() === 'online').length;
-                if (statusEl)  statusEl.innerText = `${onlineCount}/${names.length}`;
+                if (statusEl) {
+                    const tone = onlineCount === names.length ? 'ok'
+                               : onlineCount === 0           ? 'bad'
+                               : 'warn';
+                    if (window.UI && UI.pill) {
+                        statusEl.innerHTML = UI.pill(`${onlineCount}/${names.length}`, tone);
+                        statusEl.style.background = 'transparent';
+                        statusEl.style.padding = '0';
+                    } else {
+                        statusEl.innerText = `${onlineCount}/${names.length}`;
+                    }
+                }
                 if (summaryEl) summaryEl.innerText = `${onlineCount}/${names.length} kết nối online`;
 
                 const esc = (window.Security && Security.escapeHtml)
@@ -81,16 +92,16 @@ const UtilCards = {
                 listEl.innerHTML = names.slice(0, 4).map(n => {
                     const iface = ifaces[n];
                     const isOnline = (iface.status || '').toLowerCase() === 'online';
-                    const color = isOnline ? '#48bb78' : '#e53e3e';
+                    const tone    = isOnline ? 'ok' : 'bad';
+                    const statusPill = (window.UI && UI.pill)
+                        ? UI.pill(iface.status || 'unknown', tone)
+                        : `<span style="color:${isOnline ? '#48bb78' : '#e53e3e'}; font-weight:600;">${esc(iface.status || 'unknown')}</span>`;
                     return `
                         <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 5px; border-bottom:1px solid var(--border-color, #edf2f7); font-size:14px;">
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="width:8px; height:8px; background:${color}; border-radius:50%;"></span>
-                                <span style="font-weight:600;">${esc(n)}</span>
-                            </div>
+                            <span style="font-weight:600;">${esc(n)}</span>
                             <div style="display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-sub);">
                                 <span>load: ${esc(iface.load || '0%')}</span>
-                                <span style="color:${color}; font-weight:600;">${esc(iface.status || 'unknown')}</span>
+                                ${statusPill}
                             </div>
                         </div>
                     `;
@@ -199,16 +210,23 @@ const UtilCards = {
                 const topQEl    = document.getElementById('util-agh-top-queried');
                 const topBEl    = document.getElementById('util-agh-top-blocked');
 
-                // Helper to set a coloured badge
-                const setBadge = (text, bg, color) => {
+                // Helper to set a coloured badge. Prefer UI.pill (consistent
+                // with other cards); fall back to manual style if missing.
+                const setBadge = (text, tone, fallbackBg, fallbackColor) => {
                     if (!statusEl) return;
-                    statusEl.innerText = text;
-                    statusEl.style.background = bg;
-                    statusEl.style.color = color;
+                    if (window.UI && UI.pill) {
+                        statusEl.innerHTML = UI.pill(text, tone);
+                        statusEl.style.background = 'transparent';
+                        statusEl.style.padding = '0';
+                    } else {
+                        statusEl.innerText = text;
+                        statusEl.style.background = fallbackBg;
+                        statusEl.style.color = fallbackColor;
+                    }
                 };
 
                 if (!data || !data.installed) {
-                    setBadge('CHƯA CÀI', '#fed7d7', '#822727');
+                    setBadge('CHƯA CÀI', 'bad', '#fed7d7', '#822727');
                     if (summaryEl) summaryEl.innerText = data && data.message ? data.message : 'AdGuard Home không có trên router';
                     if (qEl) qEl.innerText = '--';
                     if (bEl) bEl.innerText = '--';
@@ -223,13 +241,13 @@ const UtilCards = {
                 if (data.port) this._aghPort = data.port;
 
                 if (!data.running) {
-                    setBadge('TẮT', '#fed7d7', '#822727');
+                    setBadge('TẮT', 'bad', '#fed7d7', '#822727');
                     if (summaryEl) summaryEl.innerText = `Đã cài (port ${data.port}) nhưng chưa chạy`;
                     return;
                 }
 
                 if (data.auth_required) {
-                    setBadge('CẦN AUTH', '#feebc8', '#7b341e');
+                    setBadge('CẦN AUTH', 'warn', '#feebc8', '#7b341e');
                     if (summaryEl) summaryEl.innerText = `Port ${data.port}: AGH yêu cầu Basic Auth — nhập credentials bên dưới`;
                     // Replace stats grid with inline credentials form
                     this._renderAghAuthForm();
@@ -239,6 +257,7 @@ const UtilCards = {
                 // Running + reachable. Use protection_enabled for the BẬT/TẮT signal.
                 const protectionOn = (data.status && data.status.protection_enabled) || data.protection_enabled;
                 setBadge(protectionOn ? 'BẬT' : 'TẠM TẮT',
+                         protectionOn ? 'ok' : 'warn',
                          protectionOn ? '#c6f6d5' : '#feebc8',
                          protectionOn ? '#22543d' : '#7b341e');
 
@@ -318,9 +337,16 @@ const UtilCards = {
                 const hostname = data.hostname || data.self || '';
 
                 if (stEl) {
-                    stEl.innerText = running ? 'ĐÃ KẾT NỐI' : 'NGẮT';
-                    stEl.style.background = running ? '#c6f6d5' : '#fed7d7';
-                    stEl.style.color      = running ? '#22543d' : '#822727';
+                    if (window.UI && UI.pill) {
+                        stEl.innerHTML = UI.pill(running ? 'ĐÃ KẾT NỐI' : 'NGẮT',
+                                                 running ? 'ok' : 'bad');
+                        stEl.style.background = 'transparent';
+                        stEl.style.padding = '0';
+                    } else {
+                        stEl.innerText = running ? 'ĐÃ KẾT NỐI' : 'NGẮT';
+                        stEl.style.background = running ? '#c6f6d5' : '#fed7d7';
+                        stEl.style.color      = running ? '#22543d' : '#822727';
+                    }
                 }
                 if (sumEl) sumEl.innerText = hostname || (running ? 'Connected' : 'Disconnected');
 

@@ -196,13 +196,54 @@ const MobileModule = {
 
         const setTxt = (id, txt) => { const e = document.getElementById(id); if(e) e.innerText = txt; };
 
-        // Card header shows Operator name (e.g. VIETTEL)
-        setTxt('mob-card-operator', (mobData.operator_name || "NHÀ MẠNG").toUpperCase());
-        setTxt('mob-card-type', mobData.display_type || "MOBILE");
-        
+        // Card header shows Operator name (e.g. VIETTEL). The container now
+        // holds [SignalBars span, operator text span]. Write into the LAST
+        // span so we don't blow away the SignalBars markup.
+        const opEl = document.getElementById('mob-card-operator');
+        if (opEl) {
+            const spans = opEl.querySelectorAll('span');
+            const opName = (mobData.operator_name || "NHÀ MẠNG").toUpperCase();
+            if (spans.length >= 2) {
+                spans[spans.length - 1].innerText = opName;
+            } else {
+                // Fallback for older HTML
+                opEl.innerText = opName;
+            }
+        }
+
+        // Pretty mode badge — use UI.pill with tone matching network gen
+        const typeBadge = document.getElementById('mob-card-type');
+        if (typeBadge) {
+            const mode = mobData.display_type || "MOBILE";
+            let tone = "info";
+            if (mode.includes("5G")) tone = "ok";
+            else if (mode.includes("LTE")) tone = "info";
+            else if (mode.includes("3G") || mode.includes("WCDMA")) tone = "warn";
+            if (window.UI && UI.pill) {
+                typeBadge.innerHTML = UI.pill(mode, tone);
+                typeBadge.style.padding = '0';
+                typeBadge.style.background = 'transparent';
+                typeBadge.style.border = 'none';
+            } else {
+                typeBadge.innerText = mode;
+            }
+        }
+
         let cleanBand = mobData.display_band || "--";
         cleanBand = cleanBand.replace(/\s*\([^)]*\)/g, '').trim();
         setTxt('mob-card-band', cleanBand);
+
+        // Render SignalBars next to operator — derived from RSRP dBm
+        const elBars = document.getElementById('mob-card-signal-bars');
+        if (elBars && window.UI) {
+            const rsrp = parseFloat(mobData.rsrp);
+            const bars = isNaN(rsrp) ? 0 : UI.rsrpToBars(rsrp);
+            // Color the bars to match signal quality
+            const color = bars >= 4 ? 'var(--ok)'
+                       : bars >= 2 ? 'var(--warn)'
+                       : 'var(--danger)';
+            elBars.innerHTML = UI.signalBars(bars, { color: color, height: 16 });
+        }
 
         const elStatusVal = document.getElementById('mob-card-status');
         if (elStatusVal) {
