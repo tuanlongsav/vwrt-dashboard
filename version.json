@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.14",
+        "version": "1.0.15",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "Phase 3: UI primitives + gauge rings cho System card.\n\n- js/modules/ui_components.js mới — port từ VWRT/charts.jsx + screens.jsx:\n  • UI.pill(text, tone) — badge với status dot (ok/info/warn/bad).\n  • UI.gauge(value, opts) — SVG circular progress (CPU/RAM/ROM).\n  • UI.signalBars(0..5, opts) — 5-bar cellular indicator.\n  • UI.sparkline(data, opts) — tiny line chart.\n  • UI.areaChart(data, opts) — full area chart with grid + Y labels.\n  • UI.statCard / UI.mini — composable card primitives.\n  • UI.rsrpToBars(dBm) — helper map signal strength.\n\n- system_info.js: render() giờ ưu tiên gauge SVG (sys-gauge-cpu/ram/rom), fallback progress bars cũ (kept hidden trong HTML).\n- dashboard.html: thêm gauge row trong System card, progress bars cũ chuyển display:none, footer detail row hiện RAM/ROM dạng text.\n- design-bridge.css: thêm style cho .stat-card .mini .dot.live, animation pulse cho live indicator.\n- Mọi ID cũ giữ nguyên — không break module nào."
+        "log": "Hotfix layout: cards bị squish vào cột 232px sau phase 2.\n\nRoot cause: legacy dashboard.css có .sidebar { position: fixed; transform: translateX(-100%); width: 260px } — đây là hamburger drawer cũ. Khi phase 2 dùng class='sidebar' cho design grid, legacy CSS này đẩy sidebar mới off-screen → CSS grid mất 1 cột → main bị squish 232px.\n\nFix: override toàn bộ position/transform/width/box-shadow/z-index/backdrop của legacy .sidebar bằng !important trong design-bridge.css. Cũng ẩn legacy .overlay (drawer backdrop không còn dùng).\n\nSau update: layout shell hiện đầy đủ — sidebar trái 232px + main fill width còn lại."
     }
 }

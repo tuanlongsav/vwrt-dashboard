@@ -100,6 +100,30 @@
     gap: 14px;
 }
 
+/* CRITICAL: legacy .sidebar from dashboard.css was the old hamburger drawer:
+   `position: fixed; transform: translateX(-100%); width: 260px`
+   That hid the new design sidebar OFF-SCREEN and removed it from the grid
+   flow — causing the main column to collapse to 232px (the grid's first
+   track) and squish all cards into the left of the viewport.
+   Reset every offending property so the new sidebar sits inline in
+   the CSS grid as the design intends. */
+.sidebar {
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
+    background: var(--surface) !important;
+    box-shadow: none !important;
+    z-index: auto !important;
+    backdrop-filter: none !important;
+    top: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+}
+/* Same drawer-era stale rules on the overlay (no longer used) */
+.overlay {
+    display: none !important;
+}
+
 
 /* ─── 4. Card styling tweaks under design ───────────────────────────────── */
 /* Cards inherit design.css's .card by class name but legacy markup uses    */
