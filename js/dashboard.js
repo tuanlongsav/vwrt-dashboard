@@ -28,12 +28,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sidebar nav: scroll-to-section + active highlight. The phase-2 design
     // shell has a left sidebar; nav-links point at #sec-* anchors which we
     // resolve to actual card IDs on the page (existing cards weren't renamed).
+    // WiFi has no card on the dashboard, so it opens the topbar WiFi popup
+    // instead of trying to scroll.
     (function wireSidebarNav() {
         const sectionMap = {
-            'sec-overview':  null,            // top — scroll to top
+            'sec-overview':  null,                  // top — scroll to top
             'sec-modem':     'card-mobile',
             'sec-clients':   'clients-container',
-            'sec-wifi':      'card-wifi',
+            'sec-wifi':      { popup: 'nav-wifi' }, // open WiFi popup in topbar
             'sec-multiwan':  'util-mwan-list',
             'sec-tailscale': 'util-ts-detail',
             'sec-sms':       'dashboard-sms-list',
@@ -41,21 +43,43 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         const page = document.querySelector('.page');
         const links = document.querySelectorAll('.sidebar .nav-link[data-section]');
+
+        function scrollPageTo(el) {
+            if (!page || !el) return;
+            // Use getBoundingClientRect because .page isn't position:relative,
+            // so offsetParent walks past it and produces wrong offsets.
+            const top = el.getBoundingClientRect().top
+                      - page.getBoundingClientRect().top
+                      + page.scrollTop;
+            page.scrollTo({ top: Math.max(0, top - 16), behavior: 'auto' });
+        }
+
+        function openTopbarPopup(navItemId) {
+            const item = document.getElementById(navItemId);
+            if (!item) return;
+            // Defer so HeaderModule's document-level click handler (which closes
+            // popups whose nav-item doesn't contain the click target) runs first.
+            setTimeout(() => {
+                document.querySelectorAll('.nav-item .popup-box').forEach(p => p.classList.add('hidden'));
+                const popup = item.querySelector('.popup-box');
+                if (popup) popup.classList.remove('hidden');
+            }, 0);
+        }
+
         links.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const target = link.getAttribute('data-section');
-                const id = sectionMap[target];
-                let el = id ? document.getElementById(id) : null;
-                if (!page) return;
-                if (!el || target === 'sec-overview') {
-                    page.scrollTo({ top: 0, behavior: 'smooth' });
+                const mapping = sectionMap[target];
+
+                if (mapping && typeof mapping === 'object' && mapping.popup) {
+                    openTopbarPopup(mapping.popup);
+                } else if (!mapping || target === 'sec-overview') {
+                    if (page) page.scrollTo({ top: 0, behavior: 'auto' });
                 } else {
-                    // Compute offset relative to page container
-                    let top = 0, node = el;
-                    while (node && node !== page) { top += node.offsetTop; node = node.offsetParent; }
-                    page.scrollTo({ top: Math.max(0, top - 20), behavior: 'smooth' });
+                    scrollPageTo(document.getElementById(mapping));
                 }
+
                 links.forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
             });

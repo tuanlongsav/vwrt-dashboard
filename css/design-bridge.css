@@ -79,6 +79,21 @@
 }
 
 
+/* ─── 3a. Shell sizing — make .page the actual scroll container ────────────
+   `main` in dashboard.html is a flex column holding `.topbar` + `.page`,
+   sitting in column 2 of the .shell CSS grid. Without `min-height: 0`,
+   grid items default to `min-height: auto` (content size), so the column
+   stretches to fit `.page`'s content. That makes the *document* scroll
+   while `.page` stays at scrollTop=0 — so sidebar nav clicks (which scroll
+   `.page`) appear to do nothing. The min-height fix lets `.page`'s
+   `overflow-y: auto` actually engage. */
+.shell > main {
+    min-height: 0;
+}
+.shell > main > .page {
+    min-height: 0;
+}
+
 /* ─── 3. Legacy class reins ─────────────────────────────────────────────── */
 /* Original .wrapper / .content / .main-container were "centered max-width  */
 /* page" wrappers from the 1.1.2 layout. Now that they're inside .page they */
@@ -170,22 +185,60 @@
 }
 
 
-/* ─── 6. Theme-toggle button icon container ─────────────────────────────── */
-#btn-theme-toggle {
-    width: 32px;
-    height: 32px;
+/* ─── 6. Topbar icon buttons (WiFi · Theme · Settings) ───────────────────
+   HeaderModule injects legacy markup (`.nav-item > .icon-btn`) whose
+   default style is a 42px chunky circle with --icon-bg fill — too heavy
+   next to the design system's flat surfaces. Override inside .topbar so
+   the topbar icons look like design.css's `.btn.btn-ghost.btn-icon`:
+   32x32, transparent, subtle hover. The legacy style still applies to
+   the same classes elsewhere in cards (avatars, etc.). */
+.topbar .nav-item .icon-btn {
+    width: 36px;
+    height: 36px;
     border-radius: var(--radius-sm);
     background: transparent;
     border: 1px solid var(--border);
     color: var(--text-dim);
-    cursor: pointer;
-    display: inline-grid;
-    place-items: center;
-    transition: color 0.15s, border-color 0.15s;
+    transform: none;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
 }
-#btn-theme-toggle:hover {
-    color: var(--text);
+.topbar .nav-item .icon-btn svg {
+    width: 17px;
+    height: 17px;
+}
+.topbar .nav-item .icon-btn:hover,
+.topbar .nav-item.active .icon-btn {
+    background: var(--surface-2);
     border-color: var(--border-strong);
+    color: var(--text);
+    transform: none;
+}
+/* Apple variant: glassy hover */
+[data-variant="apple"] .topbar .nav-item .icon-btn {
+    background: var(--surface);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+[data-variant="apple"] .topbar .nav-item .icon-btn:hover {
+    background: var(--surface-2);
+}
+/* WiFi badge — make it match the design accent + sit cleanly on the
+   smaller icon button. */
+.topbar .nav-item .badge {
+    top: -4px;
+    right: -4px;
+    background: var(--accent);
+    color: #0a0d12;
+    border-color: var(--bg);
+    font-size: 10px;
+    height: 16px;
+    min-width: 16px;
+    border-radius: 9px;
+}
+/* Popups: re-anchor below the new topbar height (36px button + topbar
+   padding) so they don't float at the wrong y-offset. */
+.topbar .nav-item .popup-box {
+    top: 48px;
 }
 
 

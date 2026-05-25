@@ -32,6 +32,7 @@ structure_scan.sh
 # AI/Agent artifacts (optional - remove if you want to keep them repo-side)
 .gemini/
 .agent/
+.claude/
 task.md
 
 deploy_tool/
