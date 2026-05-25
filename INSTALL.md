@@ -41,7 +41,7 @@ Script sẽ tự:
 1. Kiểm tra & cài các package OpenWrt cần thiết (`lua`, `lua-cjson`, `luci-lib-jsonc`, `uhttpd`, `wget-ssl`).
 2. Backup install cũ (nếu có) ra `/root/vwrt_backup_<timestamp>.tar.gz`.
 3. Tải tarball từ GitHub, copy vào `/www/vwrt/`.
-4. Tạo symlink LuCI (`luci-static`, `cgi-bin/luci`).
+4. Tạo symlink LuCI (`luci-static`, `cgi-bin/luci`, `cgi-bin/cgi-exec`, `cgi-bin/cgi-upload`, `cgi-bin/cgi-download`, `cgi-bin/cgi-backup`).
 5. Cài 2 daemon `mobile_poller` và `sms_sync` vào `/etc/init.d/`.
 6. Khởi tạo storage (`/overlay/vwrt_sms_archive.json`, `/etc/config/vwrt`).
 7. Set `uhttpd.main.home='/www/vwrt'` → VWRT thành UI mặc định.
@@ -242,8 +242,12 @@ cat /tmp/vwrt_uninstall.log
 ├── css/  js/  lib/
 ├── cgi-bin/                        ← Lua/uhttpd CGI endpoints
 ├── services/                       ← Lua daemons
-├── luci-static  → /www/luci-static (symlink)
-└── cgi-bin/luci → /www/cgi-bin/luci (symlink)
+├── luci-static          → /www/luci-static (symlink)
+├── cgi-bin/luci         → /www/cgi-bin/luci (symlink)
+├── cgi-bin/cgi-exec     → /www/cgi-bin/cgi-exec (symlink)     ← opkg-call, rrdtool graph
+├── cgi-bin/cgi-upload   → /www/cgi-bin/cgi-upload (symlink)   ← file upload
+├── cgi-bin/cgi-download → /www/cgi-bin/cgi-download (symlink) ← file download
+└── cgi-bin/cgi-backup   → /www/cgi-bin/cgi-backup (symlink)   ← config backup
 
 /etc/init.d/mobile_poller           ← Daemon: poll modem mỗi 5s
 /etc/init.d/sms_sync                ← Daemon: đồng bộ SMS modem ↔ archive

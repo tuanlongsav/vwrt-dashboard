@@ -424,6 +424,22 @@ fix_symlinks() {
         warn "/www/cgi-bin/luci missing — LuCI access via VWRT may not work."
         warn "Install luci-base or check your OpenWrt version."
     fi
+
+    # LuCI helper CGIs — needed when uhttpd.home=/www/vwrt because LuCI's
+    # JS hits /cgi-bin/cgi-exec for opkg-call (list-installed) and
+    # rrdtool graph; cgi-upload / cgi-download / cgi-backup handle file
+    # transfers and config backup. Without these, the browser sees 404 →
+    # NotFoundError. Symlink each one if present; warn if absent so we
+    # don't fail the install on minimal LuCI builds that omit them.
+    mkdir -p "$INSTALL_DIR/cgi-bin"
+    for helper in cgi-exec cgi-upload cgi-download cgi-backup; do
+        if [ -e "/www/cgi-bin/$helper" ]; then
+            ln -snf "/www/cgi-bin/$helper" "$INSTALL_DIR/cgi-bin/$helper"
+            ok "cgi-bin/$helper symlinked."
+        else
+            warn "/www/cgi-bin/$helper missing — some LuCI features (opkg, rrdtool, backup) may 404."
+        fi
+    done
 }
 
 # ============================================================================
