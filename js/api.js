@@ -79,6 +79,10 @@ const VWRT_API = {
     }
 };
 
+// Expose on window so JSX modules loaded later can reach it. Top-level
+// `const` doesn't auto-pollute `window` like `var` does.
+window.VWRT_API = VWRT_API;
+
 // Auto-init CSRF token on page load
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => VWRT_API.init());

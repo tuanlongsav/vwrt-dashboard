@@ -46,6 +46,33 @@ function fmtCompact(n) {
   return String(n);
 }
 
+// Shared action POST helper. Adds CSRF token + handles toast on success/fail.
+async function apiAction(url, payload, opts) {
+  opts = opts || {};
+  try {
+    if (window.VWRT_API && !window.VWRT_API.csrfToken) {
+      await window.VWRT_API.fetchCSRFToken();
+    }
+    const headers = window.VWRT_API ? window.VWRT_API.getHeaders() : { 'Content-Type': 'application/json' };
+    const body = Object.assign({}, payload || {});
+    if (window.VWRT_API && window.VWRT_API.csrfToken && !body.csrf_token) body.csrf_token = window.VWRT_API.csrfToken;
+    const r = await fetch(url, {
+      method: 'POST', headers,
+      credentials: 'same-origin',
+      body: JSON.stringify(body),
+    }).then(x => x.json());
+    if (r && (r.status === 'success' || r.ok === true)) {
+      if (opts.successMsg !== false) window.toast && window.toast(opts.successMsg || "✓");
+      return { ok: true, data: r };
+    }
+    window.toast && window.toast("✗ " + ((r && r.message) || 'Error'));
+    return { ok: false, data: r };
+  } catch (e) {
+    window.toast && window.toast("✗ " + (e.message || 'Network error'));
+    return { ok: false, error: e };
+  }
+}
+
 // ─── shared bits ──────────────────────────────────────────────────────────
 function Pill({ children, tone = "" }) {
   return <span className={`tag tag-${tone}`}><span className="dot" />{children}</span>;
@@ -566,9 +593,33 @@ function ComposeModal({ onClose }) {
   const [to, setTo] = uS("");
   const [body, setBody] = uS("");
   const [sending, setSending] = uS(false);
-  const send = () => {
+  const [err, setErr] = uS("");
+  const send = async () => {
     setSending(true);
-    setTimeout(() => { setSending(false); onClose(); window.toast && window.toast(t("sendSms") + " ✓ " + to); }, 800);
+    setErr("");
+    try {
+      if (window.VWRT_API && !window.VWRT_API.csrfToken) {
+        await window.VWRT_API.fetchCSRFToken();
+      }
+      const headers = window.VWRT_API ? window.VWRT_API.getHeaders() : { 'Content-Type': 'application/json' };
+      const payload = { number: to, text: body };
+      if (window.VWRT_API && window.VWRT_API.csrfToken) payload.csrf_token = window.VWRT_API.csrfToken;
+      const r = await fetch('/cgi-bin/sms/send', {
+        method: 'POST', headers,
+        credentials: 'same-origin',
+        body: JSON.stringify(payload),
+      }).then(x => x.json());
+      if (r && r.status === 'success') {
+        window.toast && window.toast(t("sendSms") + " ✓ " + to);
+        onClose();
+      } else {
+        setErr(r && r.message ? r.message : 'Send failed');
+      }
+    } catch (e) {
+      setErr(e.message || 'Network error');
+    } finally {
+      setSending(false);
+    }
   };
   return (
     <div className="modal-bg" onClick={onClose}>
@@ -591,6 +642,7 @@ function ComposeModal({ onClose }) {
               <span>{Math.ceil(body.length / 160) || 1} segment</span>
             </div>
           </div>
+          {err && <div className="dim small" style={{ color: "var(--danger)" }}>{err}</div>}
         </div>
         <div className="modal-foot">
           <button className="btn" onClick={onClose}>{t("cancel")}</button>
@@ -974,21 +1026,31 @@ function SettingsScreen({ onLogout }) {
             <div className="card-title">{t("reboot")} & {t("logout")}</div>
           </div>
           <div className="col" style={{ gap: 10 }}>
-            <button className="btn" style={{ justifyContent: "flex-start", padding: 14 }}>
+            <button className="btn"
+                    onClick={() => apiAction('/cgi-bin/system/action', { action: 'restart_mobile' }, { successMsg: 'Restart Network ✓' })}
+                    style={{ justifyContent: "flex-start", padding: 14 }}>
               <Icon name="refresh" size={16} />
               <div style={{ textAlign: "left" }}>
                 <div className="bold small">Restart Network</div>
                 <div className="dim tiny">/etc/init.d/network restart</div>
               </div>
             </button>
-            <button className="btn" style={{ justifyContent: "flex-start", padding: 14 }}>
+            <button className="btn"
+                    onClick={() => apiAction('/cgi-bin/mobile/action', { action: 'restart' }, { successMsg: 'Restart Modem ✓' })}
+                    style={{ justifyContent: "flex-start", padding: 14 }}>
               <Icon name="zap" size={16} />
               <div style={{ textAlign: "left" }}>
                 <div className="bold small">Restart Modem</div>
                 <div className="dim tiny">mmcli -m 0 --disable && --enable</div>
               </div>
             </button>
-            <button className="btn" style={{ justifyContent: "flex-start", padding: 14, color: "var(--danger)", borderColor: "var(--danger)" }}>
+            <button className="btn"
+                    onClick={() => {
+                      if (confirm(t("reboot") + " router?")) {
+                        apiAction('/cgi-bin/system/action', { action: 'reboot' }, { successMsg: 'Rebooting…' });
+                      }
+                    }}
+                    style={{ justifyContent: "flex-start", padding: 14, color: "var(--danger)", borderColor: "var(--danger)" }}>
               <Icon name="power" size={16} />
               <div style={{ textAlign: "left" }}>
                 <div className="bold small">{t("reboot")} now</div>

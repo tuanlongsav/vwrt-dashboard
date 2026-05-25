@@ -93,12 +93,15 @@ function App() {
 
   const lang = tweaks.lang;
   const T = (k) => window.I18N[lang][k] || k;
+  // Dev tweaks panel (variant / theme / accent) shows only with ?tweaks=1
+  // in the URL so users don't see it in production.
+  const showTweaks = /[?&]tweaks=1\b/.test(window.location.search);
 
   if (!authed) {
     return (
       <>
         <LoginScreen onLogin={() => setAuthed(true)} lang={lang} />
-        <TweaksPanelInline tweaks={tweaks} setTweak={setTweak} />
+        {showTweaks && <TweaksPanelInline tweaks={tweaks} setTweak={setTweak} />}
       </>
     );
   }
@@ -197,7 +200,7 @@ function App() {
         ))}
       </div>
 
-      <TweaksPanelInline tweaks={tweaks} setTweak={setTweak} />
+      {showTweaks && <TweaksPanelInline tweaks={tweaks} setTweak={setTweak} />}
     </div>
   );
 }

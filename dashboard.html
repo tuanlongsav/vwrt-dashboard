@@ -27,10 +27,11 @@
         <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
         <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
 
-        <!-- data.js seeds window.I18N (translations) + a mock window.VData.
-             real-data.js then replaces VData with a live one fed from the
-             router's /cgi-bin/* endpoints. Loading order matters — VData
-             must be defined before any JSX that references it. -->
+        <!-- Pre-React infrastructure:
+             api.js     — VWRT_API singleton: CSRF token + ubus calls.
+             data.js    — i18n strings + mock VData (replaced by real-data).
+             real-data.js — polls /cgi-bin/* + exposes live VData. -->
+        <script src="js/api.js?v=2"></script>
         <script src="app/data.js?v=1"></script>
         <script src="app/real-data.js?v=1"></script>
 
