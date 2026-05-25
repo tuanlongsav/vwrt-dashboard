@@ -13,7 +13,7 @@ const ThemeModule = {
 
     init: function () {
         const theme   = localStorage.getItem(this.THEME_KEY)   || 'dark';
-        const variant = localStorage.getItem(this.VARIANT_KEY) || 'noc';
+        const variant = localStorage.getItem(this.VARIANT_KEY) || 'apple';
 
         this.applyTheme(theme);
         this.applyVariant(variant);

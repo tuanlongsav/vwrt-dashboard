@@ -1,0 +1,185 @@
+/* ============================================================================
+ * design-bridge.css — overrides making legacy dashboard.css + design.css coexist
+ * ============================================================================
+ * Phase 2 wraps the existing dashboard content (cards, panels) in the design
+ * system's .app/.sidebar/.topbar/.page shell. The legacy CSS in dashboard.css
+ * still styles inner cards using its own colours and variables. This file:
+ *
+ *   1. Maps legacy CSS variable names (--bg-card, --text-main, ...) onto the
+ *      design tokens (--surface, --text, ...) so cards look correct under
+ *      either variant + theme.
+ *
+ *   2. Tunes the few design classes that don't appear in design.css itself
+ *      (.sidebar-footer-card, .user-avatar, etc.) — these are referenced by
+ *      the new sidebar HTML in dashboard.html.
+ *
+ *   3. Reins in legacy classes that conflicted with the new shell (no more
+ *      fixed-width wrapper, no more separate header background).
+ * ========================================================================== */
+
+
+/* ─── 1. Legacy variable bridge ─────────────────────────────────────────── */
+/* These names are sprinkled throughout the legacy CSS as var(--bg-card),    */
+/* var(--text-main), etc. Mapping them to design tokens means switching      */
+/* variant or theme also retones every legacy card.                          */
+:root {
+    --bg-body:        var(--bg);
+    --bg-card:        var(--surface);
+    --bg-popup:       var(--surface-2);
+    --text-main:      var(--text);
+    --text-sub:       var(--text-dim);
+    --text-faint:     var(--text-faint);
+    --border-color:   var(--border);
+    --accent-color:   var(--accent);
+    --blue-500:       var(--info);
+    --shadow:         var(--shadow);
+}
+
+
+/* ─── 2. Sidebar footer card (user pill) ────────────────────────────────── */
+.sidebar-footer-card {
+    margin-top: auto;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+.user-info .user-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text);
+}
+.user-info .user-host {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ─── 3. Legacy class reins ─────────────────────────────────────────────── */
+/* Original .wrapper / .content / .main-container were "centered max-width  */
+/* page" wrappers from the 1.1.2 layout. Now that they're inside .page they */
+/* shouldn't add their own padding or max-width.                            */
+.main-container {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent;
+}
+.cards-wrapper {
+    background: transparent;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.cards-track {
+    gap: 14px;
+}
+
+
+/* ─── 4. Card styling tweaks under design ───────────────────────────────── */
+/* Cards inherit design.css's .card by class name but legacy markup uses    */
+/* its own card class. Match the look so dashboard feels uniform.           */
+.card,
+.cards-wrapper > div[class*="card"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: none;
+}
+[data-variant="apple"] .card,
+[data-variant="apple"] .cards-wrapper > div[class*="card"] {
+    box-shadow: var(--shadow);
+}
+
+/* Apple variant: round inputs, gentle hover */
+[data-variant="apple"] input.input,
+[data-variant="apple"] select,
+[data-variant="apple"] textarea {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+}
+
+
+/* ─── 5. Nav link active state ──────────────────────────────────────────── */
+/* design.css defines .nav-link.active but only highlights via colour. */
+/* Add a left-edge accent bar for clarity.                              */
+.sidebar .nav-link.active {
+    position: relative;
+    background: rgba(0, 217, 166, 0.08);
+}
+.sidebar .nav-link.active::before {
+    content: "";
+    position: absolute;
+    left: -14px;
+    top: 6px;
+    bottom: 6px;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+}
+
+
+/* ─── 6. Theme-toggle button icon container ─────────────────────────────── */
+#btn-theme-toggle {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    cursor: pointer;
+    display: inline-grid;
+    place-items: center;
+    transition: color 0.15s, border-color 0.15s;
+}
+#btn-theme-toggle:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+}
+
+
+/* ─── 7. Mobile: hide the sidebar (already handled by design.css media) ── */
+@media (max-width: 880px) {
+    .topbar {
+        padding: 10px 16px;
+    }
+    .topbar .crumb { font-size: 13px; }
+    .cards-wrapper { padding: 12px; }
+}
+
+
+/* ─── 8. Settings popup compatibility ──────────────────────────────────── */
+/* The popup was originally absolutely positioned over the header. With the */
+/* new topbar it still works but needs to overlay the topbar area too.     */
+.settings-popup {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: var(--shadow) !important;
+}

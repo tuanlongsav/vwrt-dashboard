@@ -25,6 +25,43 @@ document.addEventListener('DOMContentLoaded', function() {
         UtilCards.init();
     }
 
+    // Sidebar nav: scroll-to-section + active highlight. The phase-2 design
+    // shell has a left sidebar; nav-links point at #sec-* anchors which we
+    // resolve to actual card IDs on the page (existing cards weren't renamed).
+    (function wireSidebarNav() {
+        const sectionMap = {
+            'sec-overview':  null,            // top — scroll to top
+            'sec-modem':     'card-mobile',
+            'sec-clients':   'clients-container',
+            'sec-wifi':      'card-wifi',
+            'sec-multiwan':  'util-mwan-list',
+            'sec-tailscale': 'util-ts-detail',
+            'sec-sms':       'dashboard-sms-list',
+            'sec-adguard':   'util-agh-stats',
+        };
+        const page = document.querySelector('.page');
+        const links = document.querySelectorAll('.sidebar .nav-link[data-section]');
+        links.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = link.getAttribute('data-section');
+                const id = sectionMap[target];
+                let el = id ? document.getElementById(id) : null;
+                if (!page) return;
+                if (!el || target === 'sec-overview') {
+                    page.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    // Compute offset relative to page container
+                    let top = 0, node = el;
+                    while (node && node !== page) { top += node.offsetTop; node = node.offsetParent; }
+                    page.scrollTo({ top: Math.max(0, top - 20), behavior: 'smooth' });
+                }
+                links.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+    })();
+
     const btnLogout = document.getElementById('btnTopLogout');
     if(btnLogout) {
         btnLogout.addEventListener('click', function(e) {

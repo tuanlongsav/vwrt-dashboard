@@ -1,7 +1,7 @@
 {
     "dashboard": {
-        "version": "1.0.12",
+        "version": "1.0.13",
         "url": "https://github.com/tuanlongsav/vwrt-dashboard/archive/refs/heads/main.tar.gz",
-        "log": "UI: tích hợp design system mới từ VWRT prototype (phase 1).\n\n- Bổ sung css/design.css (~780 dòng) — design tokens + 2 variant (NOC monospace / Apple clean) + dark/light theme dùng CSS variables.\n- Loại Google Fonts @import (router thường offline); dùng Noto Sans Display đã ship + system fallback cho monospace.\n- index.html (login): rewrite hoàn toàn theo design — brand mark, input có icon, button accent xanh ngọc, fonts mono cho footer.\n- dashboard.html: thêm <html data-variant data-theme> + load design.css (existing CSS giữ nguyên override).\n- theme.js: mở rộng — toggle cả data-variant lẫn data-theme, persist localStorage (key vwrt_variant + vwrt_theme).\n- Settings popup thêm section 'Giao diện' — 4 nút chọn NOC/Apple/Dark/Light, highlight active.\n- Phase 2 (rebuild dashboard layout với .app .sidebar .topbar) sẽ làm sau."
+        "log": "Phase 2: rebuild dashboard layout theo VWRT design prototype.\n\n- <html data-variant='apple' data-theme='dark'> default (Apple clean, rounded).\n- Shell mới: .app .shell .sidebar + main > .topbar + .page scrollbox.\n- Sidebar trái dạng prototype: brand-mark 'V' + 3 nhóm nav (system/network/tools) với SVG icons.\n- Topbar trên: breadcrumb 'VWRT > Dashboard' + theme toggle + header controls.\n- Sidebar nav-link click → scroll-to-section trong .page với map data-section → existing card ID.\n- css/design-bridge.css mới: ánh xạ legacy CSS vars (--bg-card, --text-main, ...) sang design tokens (--surface, --text, ...) để cards cũ tự retone theo variant/theme.\n- User card ở sidebar footer (avatar 'R' + name + host + logout).\n- All existing card IDs preserved — không module nào cần sửa.\n- Mobile (< 880px): sidebar tự ẩn (design.css media query)."
     }
 }
