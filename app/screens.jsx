@@ -74,18 +74,66 @@ function StatCard({ label, value, sub, color, sparkData, unit, live }) {
 }
 
 // ─── Login ────────────────────────────────────────────────────────────────
+// Calls /ubus with the system "00000000…" session token to attempt
+// `session.login`. On success the returned ubus_rpc_session is persisted to
+// localStorage as vwrt_session so subsequent requests carry it via the
+// existing CGI / cookie auth. Empty username triggers root→admin fallback.
+async function ubusLogin(user, pass) {
+  const rpc = {
+    jsonrpc: "2.0", id: 1, method: "call",
+    params: ["00000000000000000000000000000000", "session", "login", { username: user, password: pass }],
+  };
+  const r = await fetch("/ubus", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(rpc),
+    credentials: "same-origin",
+  }).then(x => x.json());
+  if (r && r.result && r.result[0] === 0 && r.result[1] && r.result[1].ubus_rpc_session) {
+    return r.result[1].ubus_rpc_session;
+  }
+  return null;
+}
 function LoginScreen({ onLogin, lang }) {
-  const [u, setU] = uS("root");
+  const [u, setU] = uS(() => localStorage.getItem("vwrt_user") || "");
   const [p, setP] = uS("");
   const [loading, setLoading] = uS(false);
-  const submit = (e) => {
+  const [err, setErr] = uS("");
+  const cardRef = uR(null);
+  const submit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
-    setTimeout(() => { setLoading(false); onLogin(); }, 700);
+    setErr("");
+    const auto = u.trim() === "";
+    const tryUser = auto ? "root" : u.trim();
+    try {
+      let sid = await ubusLogin(tryUser, p);
+      let user = tryUser;
+      if (!sid && auto) {
+        sid = await ubusLogin("admin", p);
+        user = "admin";
+      }
+      if (!sid) {
+        setErr(lang === "en" ? "Wrong username or password." : "Sai tài khoản hoặc mật khẩu!");
+        if (cardRef.current) {
+          cardRef.current.style.animation = "shake 0.5s";
+          setTimeout(() => { if (cardRef.current) cardRef.current.style.animation = "none"; }, 500);
+        }
+        setLoading(false);
+        return;
+      }
+      localStorage.setItem("vwrt_session", sid);
+      localStorage.setItem("vwrt_user", user);
+      onLogin();
+    } catch (e) {
+      setErr(lang === "en" ? "Connection error." : "Lỗi kết nối!");
+      setLoading(false);
+    }
   };
   return (
     <div className="login-wrap">
-      <div className="login-card fade-in">
+      <div className="login-card fade-in" ref={cardRef}>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
           <div className="brand-mark" style={{ width: 56, height: 56, fontSize: 22, borderRadius: 14 }}>V</div>
         </div>
@@ -96,7 +144,7 @@ function LoginScreen({ onLogin, lang }) {
             <div style={{ position: "absolute", left: 12, top: 10, color: "var(--text-faint)" }}>
               <Icon name="user" size={16} />
             </div>
-            <input className="input" style={{ paddingLeft: 38, height: 40 }} value={u} onChange={(e) => setU(e.target.value)} placeholder={t("username")} />
+            <input className="input" autoFocus style={{ paddingLeft: 38, height: 40 }} value={u} onChange={(e) => setU(e.target.value)} placeholder={t("username") + " (root)"} />
           </div>
           <div style={{ position: "relative" }}>
             <div style={{ position: "absolute", left: 12, top: 10, color: "var(--text-faint)" }}>
@@ -104,13 +152,14 @@ function LoginScreen({ onLogin, lang }) {
             </div>
             <input className="input" type="password" style={{ paddingLeft: 38, height: 40 }} value={p} onChange={(e) => setP(e.target.value)} placeholder={t("password")} />
           </div>
-          <button className="btn btn-primary" type="submit" style={{ height: 42, justifyContent: "center", marginTop: 6, fontSize: 14 }}>
+          {err && <div className="dim small" style={{ color: "var(--danger)", marginTop: -4 }}>{err}</div>}
+          <button className="btn btn-primary" type="submit" disabled={loading} style={{ height: 42, justifyContent: "center", marginTop: 6, fontSize: 14, opacity: loading ? 0.7 : 1 }}>
             {loading ? "..." : t("signIn")}
             {!loading && <Icon name="arrowRight" size={14} />}
           </button>
         </form>
         <div className="dim tiny" style={{ marginTop: 22, fontFamily: "var(--font-mono)" }}>
-          OpenWrt 24.10.1 · aarch64_cortex-a53 · v2.4.0
+          OpenWrt · VWRT fork by longht
         </div>
       </div>
     </div>

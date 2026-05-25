@@ -52,18 +52,13 @@ function App() {
   // expose lang globally for t()
   window.__lang = tweaks.lang;
 
-  // Logout: clear session + return to legacy login page (Phase 3 will move
-  // login into React so we can just flip authed=false instead).
+  // Logout: clear session + flip back to LoginScreen (no redirect now that
+  // login lives inside React — Phase 3).
   const doLogout = () => {
     try {
       localStorage.removeItem('vwrt_session');
-      localStorage.removeItem('vwrt_user');
     } catch (e) { /* ignore */ }
-    if (window.VWRT_API && typeof window.VWRT_API.logout === 'function') {
-      window.VWRT_API.logout();
-    }
     setAuthed(false);
-    window.location.href = 'index.html';
   };
 
   useEffect(() => {

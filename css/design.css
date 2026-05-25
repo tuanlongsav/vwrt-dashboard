@@ -689,6 +689,13 @@ svg { display: block; }
 /* ─── Animations ──────────────────────────────────────────────────────────── */
 @keyframes fadein { from { opacity: 1; } to { opacity: 1; } }
 .fade-in { opacity: 1; }
+@keyframes shake {
+  0%   { transform: translateX(0); }
+  25%  { transform: translateX(-10px); }
+  50%  { transform: translateX(10px); }
+  75%  { transform: translateX(-10px); }
+  100% { transform: translateX(0); }
+}
 
 /* ─── Clock-safe overrides ──────────────────────────────────────────────────
    The preview iframe can freeze CSS animation/transition timelines at t=0,
